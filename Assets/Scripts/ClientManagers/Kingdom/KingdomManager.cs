@@ -6,6 +6,8 @@ using System.Linq;
 
 using UnityEngine;
 
+using Unity.VisualScripting;
+
 using Newtonsoft.Json;
 
 using Assets.Scripts.ClientManagers.Game;
@@ -15,8 +17,6 @@ using MonoMonarchNetworkFramework.Game.Kingdom;
 using MonoMonarchNetworkFramework.Game.Soupkitchen;
 
 using MonoMonarchGameFramework.Game;
-using MonoMonarchGameFramework.Game.Soupkitchen;
-using MonoMonarchGameFramework.Game.Treasury;
 using MonoMonarchGameFramework.Game.Kingdom;
 using MonoMonarchGameFramework.Game.Kingdom.Nodes;
 using MonoMonarchGameFramework.Game.Kingdom.Nodes.TownCentre;
@@ -29,12 +29,6 @@ using MonoMonarchGameFramework.Game.Kingdom.Nodes.Road;
 using MonoMonarchGameFramework.Game.Kingdom.Nodes.Blockade;
 using MonoMonarchGameFramework.Game.Kingdom.Nodes.MTower;
 using MonoMonarchGameFramework.Game.Kingdom.Nodes.Wonder;
-using System.Reflection;
-using static UnityEditor.Experimental.GraphView.Port;
-using UnityEditor.Experimental.GraphView;
-using Unity.VisualScripting;
-
-
 
 
 namespace Assets.Scripts.ClientManagers.Kingdom
@@ -116,6 +110,7 @@ namespace Assets.Scripts.ClientManagers.Kingdom
         public void ClearKingdomCache()
         {
             KingdomLoadResponse = null;
+
         }
 
         public async Task<bool> KingdomLoadAsync()
@@ -150,14 +145,14 @@ namespace Assets.Scripts.ClientManagers.Kingdom
 
 
         #region Map Zoning
-        [SerializeField] private List<BaseNode> zonedMapList;
+        [SerializeField] private Dictionary<int, BaseNode> zonedMapDict; //index , BaseNode
         [SerializeField] private int[] zonedNumNodeTypes = { 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-        [SerializeField] private List<Color> nodeColours;
+        [SerializeField] private Color[] nodeColours;
         [SerializeField] private bool isZoningMode;
 
+        public Dictionary<int, BaseNode> ZonedMapDict { get => zonedMapDict; set => zonedMapDict = value; }
         public int[] ZonedNumNodeTypes { get => zonedNumNodeTypes; set => zonedNumNodeTypes = value; }
-        public List<BaseNode> ZonedMapList { get => zonedMapList; set => zonedMapList = value; }
-        public List<Color> NodeColours { get => nodeColours; set => nodeColours = value; }
+        public Color[] NodeColours { get => nodeColours; set => nodeColours = value; }
         public bool IsZoningMode { get => isZoningMode; set => isZoningMode = value; }
 
         private Dictionary<int, GameObject> flareDict;
@@ -175,9 +170,9 @@ namespace Assets.Scripts.ClientManagers.Kingdom
             {
                 IsZoningMode = true;
 
-                int[] nodeIdArray = new int[ZonedMapList.Count];
-                for (int i = 0; i < ZonedMapList.Count; i++)
-                    nodeIdArray[i] = ZonedMapList[i].NodeIndex;
+                int[] nodeIdArray = new int[ZonedMapDict.Count];
+                for (int i = 0; i < ZonedMapDict.Count; i++)
+                    nodeIdArray[i] = ZonedMapDict[i].NodeIndex;
 
                 //change material of scene nodes to zonedmap node's material
                 DistinguishZoningNodes(nodeIdArray);
@@ -193,7 +188,7 @@ namespace Assets.Scripts.ClientManagers.Kingdom
             else if (!enableZoningMode && IsZoningMode)
             {
                 IsZoningMode = false;
-                foreach (BaseNode node in ZonedMapList)
+                foreach (BaseNode node in ZonedMapDict.Values)
                 {
                     NodeList[Map[node.NodeIndex].NodeType][node.NodeIndex].gameObject.GetComponent<MeshRenderer>().material.color = nodeColours.ElementAt(node.NodeType);
 
@@ -213,7 +208,7 @@ namespace Assets.Scripts.ClientManagers.Kingdom
                 return false;
 
             //road blockade rule
-            foreach (BaseNode node in ZonedMapList)
+            foreach (BaseNode node in ZonedMapDict.Values)
             {
                 if (node.NodeType == 6)
                     if (Map[node.NodeIndex].NodeType != 5)
@@ -253,14 +248,14 @@ namespace Assets.Scripts.ClientManagers.Kingdom
 
         public BaseNode FindZonedMapNode(int index)
         {
-            int left = 0, right = ZonedMapList.Count - 1;
+            int left = 0, right = ZonedMapDict.Count - 1;
 
             while (left <= right)
             {
                 int mid = left + (right - left) / 2;
-                if (ZonedMapList[mid].NodeIndex == index)
-                    return ZonedMapList[mid];
-                else if (ZonedMapList[mid].NodeIndex < index)
+                if (ZonedMapDict[mid].NodeIndex == index)
+                    return ZonedMapDict[mid];
+                else if (ZonedMapDict[mid].NodeIndex < index)
                     left = mid + 1;
                 else
                     right = mid - 1;
@@ -276,9 +271,12 @@ namespace Assets.Scripts.ClientManagers.Kingdom
         {
             KingdomState.NumNodeTypes[GetSelectedBuildingState()] -= count;
         }
+        /// <summary>
+        /// not required? dictionary not list now
+        /// </summary>
         public void SortZoningMap()
         {
-            ZonedMapList = ZonedMapList.OrderBy(u => u.NodeIndex).ToList();
+           // ZonedMapDict = ZonedMapDict.OrderBy(u => u.NodeIndex).ToList();
         }
 
         public void DistinguishZoningNodes(int[] nodeIdArray)
@@ -286,7 +284,10 @@ namespace Assets.Scripts.ClientManagers.Kingdom
             //GET ZONEDMAP NODE MATERIAL VIA NODETYPE
             int[] nodeTypeArray = new int[nodeIdArray.Length];
             for (int i = 0; i < nodeIdArray.Length; i++)
-                nodeTypeArray[i] = ZonedMapList.ElementAt(nodeIdArray[i]).NodeType;
+            {
+                nodeTypeArray[i] = ZonedMapDict.ElementAt(nodeIdArray[i]).Value.NodeType;
+            }
+                
             //SET MATERIAL
             SetZonedOpacitySelection(nodeIdArray, 0.75f);
             SetZonedColourSelection(nodeIdArray, nodeTypeArray);
@@ -299,58 +300,51 @@ namespace Assets.Scripts.ClientManagers.Kingdom
 
 
 
-            for (int i = 0; i < ZonedMapList.Count(); i++)
+            for (int i = 0; i < ZonedMapDict.Count(); i++)
             {
                 //glow effect red or green
             }
         }
 
-        public void AddNodesZonedMap(List<BaseNode> nodeList)//revisit how this should function
+        public void AddNodesZonedMap(int[] zonedMapNodeIds)
         {
-            if (ZonedMapList is null)
-                ZonedMapList = new List<BaseNode>();
-
-            ZonedMapList.Union(nodeList);
-            //int[] nodeIdArray = new int[nodeList.Count];
-            //for (int i = 0; i < nodeList.Count; i++)
-            //    nodeIdArray[i] = nodeList.ElementAt(i).NodeIndex;
-            //DistinguishZoningNodes(nodeIdArray);//CONSIDER REMOVING THIS LINE? - CALL ELSEWHERE
+            foreach (int nodeId in zonedMapNodeIds)
+            {
+                BaseNode node = GetSelectedBaseNodeZoning(nodeId);
+                ZonedMapDict.Add(nodeId, node);
+                ZonedNumNodeTypes[node.NodeType]++;
+            }
         }
 
-        public void RemoveNodesZonedMap(List<BaseNode> nodeList)//revisit how this should function
+        public void RemoveNodesZonedMap(int[] zonedMapNodeIds)
         {
-            if (ZonedMapList is null)
-                ZonedMapList = new List<BaseNode>();
-
-            ZonedMapList.Intersect(nodeList);
-            //foreach (BaseNode node in nodeList)
-            //{
-            //    NodeList[Map[node.NodeIndex].NodeType][node.NodeIndex].gameObject.GetComponent<MeshRenderer>().material.color = nodeColours.ElementAt(node.NodeType);
-            //    ZonedNumNodeTypes[node.NodeType]--;//
-            //}
-            //if (ZonedMapList.Count == 0)
-            //    ToggleZoning(false);
+            foreach (int nodeId in zonedMapNodeIds)
+            {
+                BaseNode node = ZonedMapDict[nodeId];
+                ZonedMapDict.Remove(nodeId);
+                ZonedNumNodeTypes[node.NodeType]--;
+            }
         }
 
         public void DiscardZonedMap()
         {
-            int[] nodeIdArray = new int[ZonedMapList.Count];
-            for (int i = 0; i < ZonedMapList.Count; i++)
+            int[] nodeIdArray = new int[ZonedMapDict.Count];
+            for (int i = 0; i < ZonedMapDict.Count; i++)
                 nodeIdArray[i] = Map[i].NodeIndex;
 
-            int[] nodeTypeArray = new int[ZonedMapList.Count];
-            for (int i = 0; i < ZonedMapList.Count; i++)
+            int[] nodeTypeArray = new int[ZonedMapDict.Count];
+            for (int i = 0; i < ZonedMapDict.Count; i++)
                 nodeTypeArray[i] = Map[i].NodeType;
 
-            foreach (BaseNode node in ZonedMapList)
+            foreach (BaseNode node in ZonedMapDict.Values)
                 NodeList[Map[node.NodeIndex].NodeType][node.NodeIndex].gameObject.GetComponent<MeshRenderer>().material.color = nodeColours.ElementAt(node.NodeType);
 
-            ZonedMapList = new List<BaseNode>();
+            ZonedMapDict = new Dictionary<int, BaseNode>();
         }
 
         public void CommitZonedMap()
         {
-            for (int i = 0; i < ZonedMapList.Count; i++)
+            for (int i = 0; i < ZonedMapDict.Count; i++)
             {
 
             }
@@ -439,7 +433,7 @@ namespace Assets.Scripts.ClientManagers.Kingdom
             Blockade = (GameObject)Resources.Load(@"Node/Buildings/Blockade", typeof(GameObject));
             Wonder = (GameObject)Resources.Load(@"Node/Buildings/Wonder", typeof(GameObject));
 
-            NodeColours = new List<Color>
+            NodeColours = new Color[]
             {
                 Grassland.GetComponent<MeshRenderer>().material.color,
                 TownCentre.GetComponent<MeshRenderer>().material.color,

@@ -128,8 +128,11 @@ namespace Assets.Scripts.ClientManagers.Game
                 TreasuryManager.Instance.AddZoningCost(zonedNodesListForBuy);
             }
 
-            KingdomManager.Instance.RemoveNodesZonedMap(zonedNodesListForSell);
-            KingdomManager.Instance.AddNodesZonedMap(zonedNodesListForBuy);
+            KingdomManager.Instance.RemoveNodesZonedMap(zonedNodesListForSell.Select(node => node.NodeIndex).ToArray());
+            KingdomManager.Instance.AddNodesZonedMap(zonedNodesListForBuy.Select(node => node.NodeIndex).ToArray());
+
+            //KingdomManager.Instance.RemoveNodesZonedMap(zonedNodesListForSell);
+            //KingdomManager.Instance.AddNodesZonedMap(zonedNodesListForBuy);
 
 
 
@@ -141,7 +144,7 @@ namespace Assets.Scripts.ClientManagers.Game
             else
             {
 
-            }
+            }//ss
         }
 
 
@@ -366,11 +369,11 @@ namespace Assets.Scripts.ClientManagers.Game
 //            foreach (int i in iArray)
 //            {
 
-//                if (KingdomManager.Instance.ZonedMapList.key)
+//                if (KingdomManager.Instance.ZonedMapDict.key)
 //                {
 
 //                }
-//                switch (KingdomManager.Instance.ZonedMapList[i].NodeType)
+//                switch (KingdomManager.Instance.ZonedMapDict[i].NodeType)
 //                {
 //                    case 0://grassland
 
@@ -407,7 +410,7 @@ namespace Assets.Scripts.ClientManagers.Game
 //                if (!KingdomState.ValidateBlockadeRoadRule(KingdomManager.Instance.Map[i].NodeType, KingdomManager.Instance.GetSelectedBuildingState()))
 //                    indexErrorCodes.Add(i, (2, "Blockade"));
 
-//                if (i == KingdomManager.Instance.ZonedMapList[i].NodeIndex)
+//                if (i == KingdomManager.Instance.ZonedMapDict[i].NodeIndex)
 //                    indexErrorCodes.Add(i, (3,));
 
 //            }
