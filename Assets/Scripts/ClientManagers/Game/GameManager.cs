@@ -71,72 +71,54 @@ namespace Assets.Scripts.ClientManagers.Game
         #region Game Event Listeners
         private UnityEvent<int[]> buildEvent;
         public UnityEvent<int[]> BuildEvent { get => buildEvent; set => buildEvent = value; }
-       // private UnityEvent serverUpdateEvent;
-       // public UnityEvent ServerUpdateEvent { get => serverUpdateEvent; set => serverUpdateEvent = value; }
+        // private UnityEvent serverUpdateEvent;
+        // public UnityEvent ServerUpdateEvent { get => serverUpdateEvent; set => serverUpdateEvent = value; }
         public void InitialiseUnityEvents()
         {
             BuildEvent = new UnityEvent<int[]>();
             BuildEvent.AddListener(SignalZonedMapAddEvent);
-           // ServerUpdateEvent = new UnityEvent();
-           // ServerUpdateEvent.AddListener(SignalUpdateBuildUI);
-           
+            // ServerUpdateEvent = new UnityEvent();
+            // ServerUpdateEvent.AddListener(SignalUpdateBuildUI);
         }
-     
+
         void SignalZonedMapAddEvent(int[] nodeIndexes)
         {
-            List<BaseNode> zonedNodesListForBuy = new List<BaseNode>();
-            List<BaseNode> zonedNodesListForSell = new List<BaseNode>();
+            List<BaseNode> zonedNodesListForAdd = new List<BaseNode>();
+            List<BaseNode> zonedNodesListForRemove = new List<BaseNode>();
             BaseNode focusedNode = null;
-
-            KingdomManager.Instance.SortZoningMap();
 
             foreach (int i in nodeIndexes)
             {
                 if (KingdomManager.Instance.Map[i].NodeType == KingdomManager.Instance.GetSelectedBuildingState())
                 {
-                    focusedNode = KingdomManager.Instance.FindZonedMapNode(i);
-                    if (focusedNode is not null)
-                    {
-                        zonedNodesListForSell.Add(focusedNode);
-                        KingdomManager.Instance.ZonedNumNodeTypes[focusedNode.NodeType]--;
-                    }
-                    continue;
+                    if (KingdomManager.Instance.ZonedMapDict.ContainsKey(i))
+                        zonedNodesListForRemove.Add(KingdomManager.Instance.ZonedMapDict[i]);
                 }
-
-                if (KingdomManager.Instance.FindZonedMapNode(i) is BaseNode zonedNode)
+                else if (KingdomManager.Instance.ZonedMapDict.ContainsKey(i))
                 {
-                    zonedNodesListForSell.Add(zonedNode);
-                    KingdomManager.Instance.ZonedNumNodeTypes[zonedNode.NodeType]--;
-                    var newZonedNode = KingdomManager.Instance.GetSelectedBaseNodeZoning(i);
-                    zonedNodesListForBuy.Add(newZonedNode);
-                    KingdomManager.Instance.ZonedNumNodeTypes[newZonedNode.NodeType]++;
+                    focusedNode = KingdomManager.Instance.ZonedMapDict[i];
+                    zonedNodesListForRemove.Add(focusedNode);
+                    zonedNodesListForAdd.Add(KingdomManager.Instance.GetSelectedBaseNodeZoning(i));
                 }
                 else
                 {
-                    var newZonedNode = KingdomManager.Instance.GetSelectedBaseNodeZoning(i);
-                    zonedNodesListForBuy.Add(newZonedNode);
-                    KingdomManager.Instance.ZonedNumNodeTypes[newZonedNode.NodeType]++;
+                    zonedNodesListForAdd.Add(KingdomManager.Instance.GetSelectedBaseNodeZoning(i));
                 }
+
             }
 
-            if (zonedNodesListForSell.Count > 0)
+            if (zonedNodesListForRemove.Count > 0)
             {
-                TreasuryManager.Instance.SubtractZoningCost(zonedNodesListForSell);
+                TreasuryManager.Instance.SubtractZoningCost(zonedNodesListForRemove);
             }
-            if (zonedNodesListForBuy.Count > 0)
+            if (zonedNodesListForAdd.Count > 0)
             {
-                TreasuryManager.Instance.AddZoningCost(zonedNodesListForBuy);
+                TreasuryManager.Instance.AddZoningCost(zonedNodesListForAdd);
             }
 
-            KingdomManager.Instance.RemoveNodesZonedMap(zonedNodesListForSell.Select(node => node.NodeIndex).ToArray());
-            KingdomManager.Instance.AddNodesZonedMap(zonedNodesListForBuy.Select(node => node.NodeIndex).ToArray());
-
-            //KingdomManager.Instance.RemoveNodesZonedMap(zonedNodesListForSell);
-            //KingdomManager.Instance.AddNodesZonedMap(zonedNodesListForBuy);
-
-
-
-
+            KingdomManager.Instance.RemoveNodesZonedMap(zonedNodesListForRemove.Select(node => node.NodeIndex).ToArray());
+            KingdomManager.Instance.AddNodesZonedMap(zonedNodesListForAdd.Select(node => node.NodeIndex).ToArray());
+            
             if (!KingdomManager.Instance.IsZoningMode)
             {
                 KingdomManager.Instance.ToggleZoning(true);
@@ -144,10 +126,8 @@ namespace Assets.Scripts.ClientManagers.Game
             else
             {
 
-            }//ss
+            }
         }
-
-
 
 
         #endregion
