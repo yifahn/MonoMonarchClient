@@ -124,8 +124,7 @@ namespace Assets.Scripts.ClientManagers.User
                     if (await GameManager.Instance.LoadGameState())
                     {
                         GameManager.Instance.NavToScene("BTN_LOGIN_SUBMIT_L");
-
-                       // KingdomManager.Instance.
+                        GameManager.Instance.LoginProcedure();
                     }
                         
 

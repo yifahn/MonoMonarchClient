@@ -32,7 +32,14 @@ namespace Assets.Scripts.ClientManagers.Battleboard
                 return _instance;
             }
         }
-
+        public static void ResetInstance()
+        {
+            if (_instance != null)
+            {
+                Destroy(_instance.gameObject);
+                _instance = null;
+            }
+        }
         // Your manager's methods and variables go here
         // For example:
         // public void YourMethod() { /* Your implementation here */ }

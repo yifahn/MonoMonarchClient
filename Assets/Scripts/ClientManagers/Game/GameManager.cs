@@ -85,48 +85,91 @@ namespace Assets.Scripts.ClientManagers.Game
         {
             List<BaseNode> zonedNodesListForAdd = new List<BaseNode>();
             List<BaseNode> zonedNodesListForRemove = new List<BaseNode>();
-            BaseNode focusedNode = null;
 
             foreach (int i in nodeIndexes)
             {
                 if (KingdomManager.Instance.Map[i].NodeType == KingdomManager.Instance.GetSelectedBuildingState())
-                {
-                    if (KingdomManager.Instance.ZonedMapDict.ContainsKey(i))
-                        zonedNodesListForRemove.Add(KingdomManager.Instance.ZonedMapDict[i]);
+                {//IF proposed node is EQUAL to Map node, remove it from ZonedMap, ELSE do nothing
+                    if (KingdomManager.Instance.ZonedMapDict.TryGetValue(i, out var nodeToRemove))
+                        zonedNodesListForRemove.Add(nodeToRemove);
                 }
-                else if (KingdomManager.Instance.ZonedMapDict.ContainsKey(i))
-                {
-                    focusedNode = KingdomManager.Instance.ZonedMapDict[i];
-                    zonedNodesListForRemove.Add(focusedNode);
+                else if (KingdomManager.Instance.ZonedMapDict.TryGetValue(i, out var nodeToReplace))
+                {//IF proposed node is NOT EQUAL to ZonedMap node, remove it from ZonedMap and add the new one
+                    zonedNodesListForRemove.Add(nodeToReplace);
                     zonedNodesListForAdd.Add(KingdomManager.Instance.GetSelectedBaseNodeZoning(i));
-                }
+                }//IF proposed node is NOT EQUAL to ZonedMap node, AND ZonedMap does not contain it, add the new one
                 else
                 {
                     zonedNodesListForAdd.Add(KingdomManager.Instance.GetSelectedBaseNodeZoning(i));
                 }
-
             }
 
-            if (zonedNodesListForRemove.Count > 0)
-            {
-                TreasuryManager.Instance.SubtractZoningCost(zonedNodesListForRemove);
-            }
-            if (zonedNodesListForAdd.Count > 0)
-            {
-                TreasuryManager.Instance.AddZoningCost(zonedNodesListForAdd);
-            }
+            //actions removal and addition of zoned nodes in ZonedMapDict - also handles node type num tracking 
+            KingdomManager.Instance.RemoveNodesZonedMap(zonedNodesListForRemove);
+            KingdomManager.Instance.AddNodesZonedMap(zonedNodesListForAdd);
 
-            KingdomManager.Instance.RemoveNodesZonedMap(zonedNodesListForRemove.Select(node => node.NodeIndex).ToArray());
-            KingdomManager.Instance.AddNodesZonedMap(zonedNodesListForAdd.Select(node => node.NodeIndex).ToArray());
-            
             if (!KingdomManager.Instance.IsZoningMode)
             {
+                Debug.Log($"SZMAE #1");
                 KingdomManager.Instance.ToggleZoning(true);
             }
             else
             {
+                /// Only reset visuals for removed nodes that don't appear in zonedNodesListForAdd list
+                var addNodeIndices = new HashSet<int>(zonedNodesListForAdd.Select(n => n.NodeIndex));
+                foreach (var removedNode in zonedNodesListForRemove)
+                {
+                    if (!addNodeIndices.Contains(removedNode.NodeIndex))
+                    {
+                        var mapNode = KingdomManager.Instance.Map[removedNode.NodeIndex];
+                        var nodeType = mapNode.NodeType;
+                        KingdomManager.Instance.NodeList[nodeType][removedNode.NodeIndex].GetComponent<MeshRenderer>().material.color = KingdomManager.Instance.NodeColours[nodeType];
+                    }
+                }///
 
+                //continue distinguishing remaining newly altered zoned nodes
+                KingdomManager.Instance.DistinguishZoningNodes(zonedNodesListForAdd.Select(node => node.NodeIndex).ToArray());
+                
+
+                Color flareMat;
+                if (TreasuryManager.IsSufficientCoin(KingdomManager.Instance.ZonedNumNodeTypes, TreasuryManager.Instance.TreasuryState.GetTotalCoin()))
+                {
+                    flareMat = KingdomManager.Instance.FlareMatGreen.GetComponent<Color>();
+                    if (KingdomManager.Instance.FlareDict[nodeIndexes[0]].GetComponent<Color>() != flareMat)
+                    {   //if flares were red, redraw them all as green
+                        foreach (int nodeId in KingdomManager.Instance.ZonedMapDict.Keys)
+                            KingdomManager.Instance.FlareDict[nodeId].GetComponent<MeshRenderer>().material.color = flareMat;
+                        Debug.Log($"SZMAE #2");
+                    }
+                    else
+                    {   //if the flare is already green, only redraw the added zoned node's flares
+                        foreach (int nodeId in nodeIndexes)
+                            KingdomManager.Instance.FlareDict[nodeId].GetComponent<MeshRenderer>().material.color = flareMat;
+                        Debug.Log($"SZMAE #3");
+                    }
+
+                }
+                else if (!TreasuryManager.IsSufficientCoin(KingdomManager.Instance.ZonedNumNodeTypes, TreasuryManager.Instance.TreasuryState.GetTotalCoin()))
+                {
+                    flareMat = KingdomManager.Instance.FlareMatRed.GetComponent<Color>();
+                    if (KingdomManager.Instance.FlareDict[nodeIndexes[0]].GetComponent<Color>() != flareMat)
+                    {   //if flares were green, redraw them all as red
+                        foreach (int nodeId in KingdomManager.Instance.ZonedMapDict.Keys)
+                            KingdomManager.Instance.FlareDict[nodeId].GetComponent<MeshRenderer>().material.color = flareMat;
+                        Debug.Log($"SZMAE #4");
+                    }
+                    else
+                    {   //if the flare is already red, only redraw the added zoned node's flares
+                        foreach (int nodeId in nodeIndexes)
+                            KingdomManager.Instance.FlareDict[nodeId].GetComponent<MeshRenderer>().material.color = flareMat;
+                        Debug.Log($"SZMAE #5");
+                    }
+                }
             }
+            Debug.Log($"Zoning cost prior to changes: {TreasuryManager.Instance.ZoningCost}");
+            TreasuryManager.Instance.SubtractZoningCost(zonedNodesListForRemove);
+            TreasuryManager.Instance.AddZoningCost(zonedNodesListForAdd);
+            Debug.Log($"Zoning cost total: {TreasuryManager.Instance.ZoningCost}, Player coin total: {TreasuryManager.Instance.TreasuryState.GetTotalCoin()}");
         }
 
 
@@ -150,12 +193,15 @@ namespace Assets.Scripts.ClientManagers.Game
         {
             SceneManager.LoadScene(_gameService.ResolveScene(sceneName));
         }
-
+        public void LoginProcedure()
+        {
+            KingdomManager.Instance.KingdomMapGenerate();
+        }
         public void ClearGameCache()
         {
             ArmouryManager.Instance.ClearArmouryCache();
             //BattleboardManager.Instance.ClearBattleboardCache();
-            //CharacterManager.Instance.ClearCharacterChache();
+            CharacterManager.Instance.ClearCharacterCache();
             KingdomManager.Instance.ClearKingdomCache();
             SoupkitchenManager.Instance.ClearSoupkitchenCache();
             TreasuryManager.Instance.ClearTreasuryCache();

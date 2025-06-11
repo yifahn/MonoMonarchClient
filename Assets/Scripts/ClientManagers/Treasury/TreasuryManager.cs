@@ -24,6 +24,7 @@ using System.IO;
 using System.Numerics;
 using System.Collections.Generic;
 using MonoMonarchGameFramework.Game.Kingdom.Nodes;
+using MonoMonarchGameFramework.Game.Kingdom;
 
 namespace Assets.Scripts.ClientManagers.Treasury
 {
@@ -50,7 +51,14 @@ namespace Assets.Scripts.ClientManagers.Treasury
                 return _instance;
             }
         }
-
+        public static void ResetInstance()
+        {
+            if (_instance != null)
+            {
+                Destroy(_instance.gameObject);
+                _instance = null;
+            }
+        }
         private void Awake()
         {
             if (_instance != null && _instance != this)
@@ -93,9 +101,6 @@ namespace Assets.Scripts.ClientManagers.Treasury
                     TreasuryLoadResponse = treasuryLoadResponse;
 
                     TreasuryState = DeserialiseTreasuryState(TreasuryLoadResponse.TreasuryState);
-
-                    // TreasuryCoinBag = TreasuryLoadResponse.TreasuryState;
-                    //TreasuryTotalCoin = TreasuryLoadResponse.TotalCoin;
                 }
                 else if (response is ErrorResponse errorResponse)
                 {
@@ -120,6 +125,7 @@ namespace Assets.Scripts.ClientManagers.Treasury
         {
             TreasuryLoadResponse = null;
             TreasuryState = null;
+            ZoningCost = 0;
         }
 
 
@@ -144,13 +150,50 @@ namespace Assets.Scripts.ClientManagers.Treasury
 
 
         #region Treasury Tools
-        public bool IsSufficientCoin(List<BaseNode> nodeList)
+        public static bool IsSufficientCoin(int[] nodeTypesTotalArray, BigInteger totalCoin) //NodeType int representations GL==0, TC==1, H==2, L==3, F==4, R==5, B==6, MT==7, W==8
         {
-            BigInteger total = 0;
-            foreach (BaseNode node in nodeList)
-                total += node.NodeCost;
+            BigInteger totalCost = 0;
 
-            return true ? total < TreasuryState.GetTotalCoin() : false;
+            for (int i = 0; i < nodeTypesTotalArray.Length; i++)
+            {
+                totalCost += (int)((NodeCostEnum)i) * nodeTypesTotalArray[i];
+            }
+
+            //for (int i = 0; i < nodeTypesTotalArray.Length; i++)
+            //{
+            //    switch (i)
+            //    {
+            //        case 0: // grassland
+            //            totalCost += (int)NodeCostEnum.Grassland * nodeTypesTotalArray[i];
+            //            break;
+            //        case 1: // towncentre
+            //            totalCost += (int)NodeCostEnum.TownCentre * nodeTypesTotalArray[i];
+            //            break;
+            //        case 2: // house
+            //            totalCost += (int)NodeCostEnum.House * nodeTypesTotalArray[i];
+            //            break;
+            //        case 3: // library
+            //            totalCost += (int)NodeCostEnum.Library * nodeTypesTotalArray[i];
+            //            break;
+            //        case 4: // factory
+            //            totalCost += (int)NodeCostEnum.Factory * nodeTypesTotalArray[i];
+            //            break;
+            //        case 5: // road
+            //            totalCost += (int)NodeCostEnum.Road * nodeTypesTotalArray[i];
+            //            break;
+            //        case 6: // blockade
+            //            totalCost += (int)NodeCostEnum.Blockade * nodeTypesTotalArray[i];
+            //            break;
+            //        case 7: // mtower
+            //            totalCost += (int)NodeCostEnum.MTower * nodeTypesTotalArray[i];
+            //            break;
+            //        case 8: // wonder
+            //            totalCost += (int)NodeCostEnum.Wonder * nodeTypesTotalArray[i];
+            //            break;
+            //    }
+            //}
+
+            return true ? totalCost <= totalCoin : false;
         }
         #endregion
 

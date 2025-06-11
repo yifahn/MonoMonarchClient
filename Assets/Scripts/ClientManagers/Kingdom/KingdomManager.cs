@@ -29,6 +29,8 @@ using MonoMonarchGameFramework.Game.Kingdom.Nodes.Road;
 using MonoMonarchGameFramework.Game.Kingdom.Nodes.Blockade;
 using MonoMonarchGameFramework.Game.Kingdom.Nodes.MTower;
 using MonoMonarchGameFramework.Game.Kingdom.Nodes.Wonder;
+using Assets.Scripts.ClientManagers.Treasury;
+using MonoMonarchNetworkFramework.Game.Kingdom.Map;
 
 
 namespace Assets.Scripts.ClientManagers.Kingdom
@@ -56,6 +58,14 @@ namespace Assets.Scripts.ClientManagers.Kingdom
                 return _instance;
             }
         }
+        public static void ResetInstance()
+        {
+            if (_instance != null)
+            {
+                Destroy(_instance.gameObject);
+                _instance = null;
+            }
+        }
         private void Awake()
         {
             if (_instance != null && _instance != this)
@@ -72,7 +82,7 @@ namespace Assets.Scripts.ClientManagers.Kingdom
 
 
         #region Kingdom Properties
-
+        public KingdomMapUpdateResponse KingdomMapUpdateResponse { get; set; }
         public KingdomLoadResponse KingdomLoadResponse { get; set; }
         public ErrorResponse KingdomErrorResponse { get; set; }
 
@@ -110,7 +120,9 @@ namespace Assets.Scripts.ClientManagers.Kingdom
         public void ClearKingdomCache()
         {
             KingdomLoadResponse = null;
-
+            KingdomState = null;
+            ZonedMapDict = null;
+            Map = null;
         }
 
         public async Task<bool> KingdomLoadAsync()
@@ -123,6 +135,34 @@ namespace Assets.Scripts.ClientManagers.Kingdom
                     KingdomLoadResponse = kingdomLoadResponse;
                     Map = DeserialiseMap(KingdomLoadResponse.KingdomMap);
                     KingdomState = DeserialiseState(KingdomLoadResponse.KingdomState);
+                }
+                else if (response is ErrorResponse errorResponse)
+                {
+                    KingdomErrorResponse = errorResponse;
+                    GameManager.Instance.ClearGameCache();
+                    GameManager.Instance.NavToScene("btn_MainMenu_Scene");
+                    return false;
+                }
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Debug.Log("ERROR-RESPONSE FAILURE");
+                Debug.Log(ex);
+                GameManager.Instance.ClearGameCache();
+                GameManager.Instance.NavToScene("btn_MainMenu_Scene");
+                return false;
+            }
+        }
+        public async Task<bool> KingdomMapUpdateAsync(KingdomMapUpdatePayload payload)
+        {
+            try
+            {
+                var response = await _kingdomService.KingdomMapUpdateAsync(payload);
+                if (response is KingdomMapUpdateResponse kingdomMapUpdateResponse)
+                {
+                    KingdomMapUpdateResponse = kingdomMapUpdateResponse;
+
                 }
                 else if (response is ErrorResponse errorResponse)
                 {
@@ -166,62 +206,35 @@ namespace Assets.Scripts.ClientManagers.Kingdom
 
         public void ToggleZoning(bool enableZoningMode)
         {
-            if (enableZoningMode && !IsZoningMode)
+            if (enableZoningMode && !IsZoningMode) //on
             {
                 IsZoningMode = true;
 
-                int[] nodeIdArray = new int[ZonedMapDict.Count];
-                for (int i = 0; i < ZonedMapDict.Count; i++)
-                    nodeIdArray[i] = ZonedMapDict[i].NodeIndex;
+                //alter node colours to visually describe proposed zoning changes
+                DistinguishZoningNodes(ZonedMapDict.Keys.ToArray());
 
-                //change material of scene nodes to zonedmap node's material
-                DistinguishZoningNodes(nodeIdArray);
-
-                //GET FLARE COLOUR //break game rules?
-                Color flareMat = GameRulesCheck() ? FlareMatGreen.GetComponent<Color>() : FlareMatRed.GetComponent<Color>();
-                //ADD FLARE //enable flares
-                foreach (int nodeId in nodeIdArray)
-                {
+                //set flare colour to opaque green if sufficient coin, else opaque red 
+                Color flareMat = TreasuryManager.IsSufficientCoin(ZonedNumNodeTypes, TreasuryManager.Instance.TreasuryState.GetTotalCoin()) ? FlareMatGreen.GetComponent<Color>() : FlareMatRed.GetComponent<Color>();
+                foreach (int nodeId in ZonedMapDict.Keys)
                     FlareDict[nodeId].GetComponent<MeshRenderer>().material.color = flareMat;
-                }
             }
-            else if (!enableZoningMode && IsZoningMode)
+            else if (!enableZoningMode && IsZoningMode) //off
             {
                 IsZoningMode = false;
                 foreach (BaseNode node in ZonedMapDict.Values)
                 {
-                    NodeList[Map[node.NodeIndex].NodeType][node.NodeIndex].gameObject.GetComponent<MeshRenderer>().material.color = nodeColours.ElementAt(node.NodeType);
+                    //reset node colour to Map's origin
+                    NodeList[Map[node.NodeIndex].NodeType][node.NodeIndex].GetComponent<MeshRenderer>().material.color = nodeColours.ElementAt(node.NodeType);
 
+                    //reset flare colour to opaque red
                     Color redOpaque = new Color(FlareMatRed.color.r, FlareMatRed.color.g, FlareMatRed.color.b, 0);
                     FlareDict[node.NodeIndex].GetComponent<MeshRenderer>().material.color = redOpaque;
                 }
             }
         }
-        public void ToggleFlares(int flareIndexes)
-        {
-
-        }
-        public bool GameRulesCheck()
-        {
-            //node type total num rules
-            if (!KingdomState.ValidateBuildActionByNumOfBuildings(ZonedNumNodeTypes))
-                return false;
-
-            //road blockade rule
-            foreach (BaseNode node in ZonedMapDict.Values)
-            {
-                if (node.NodeType == 6)
-                    if (Map[node.NodeIndex].NodeType != 5)
-                        return false;
-            }
-
-            //sufficient coin rule
-            if (Treasury.TreasuryManager.Instance.ZoningCost > Treasury.TreasuryManager.Instance.TreasuryState.GetTotalCoin())
-                return false;
-            return true;
-        }
         public BaseNode GetSelectedBaseNodeZoning(int nodeIndex)
         {
+
             switch (GetSelectedBuildingState())
             {
                 case 1:
@@ -242,112 +255,94 @@ namespace Assets.Scripts.ClientManagers.Kingdom
                     return new Wonder { NodeCost = (int)NodeCostEnum.Wonder, NodeIndex = nodeIndex, NodeLevel = 0, NodeType = (int)NodeTypeEnum.Wonder };
                 default:
                     return new Grassland { NodeCost = (int)NodeCostEnum.Grassland, NodeIndex = nodeIndex, NodeLevel = 0, NodeType = (int)NodeTypeEnum.Grassland };
-
             }
-        }
-
-        // not required?
-        public BaseNode FindZonedMapNode(int index)
-        {
-            int left = 0, right = ZonedMapDict.Count - 1;
-
-            while (left <= right)
-            {
-                int mid = left + (right - left) / 2;
-                if (ZonedMapDict[mid].NodeIndex == index)
-                    return ZonedMapDict[mid];
-                else if (ZonedMapDict[mid].NodeIndex < index)
-                    left = mid + 1;
-                else
-                    right = mid - 1;
-            }
-
-            return null; // Node not found
-        }
-        public void AddNumNodeTypes(int count)
-        {//not required?
-            KingdomState.NumNodeTypes[GetSelectedBuildingState()] += count;
-        }
-        public void SubtractNumNodeTypes(int count)
-        {
-            KingdomState.NumNodeTypes[GetSelectedBuildingState()] -= count;
-        }
-        /// <summary>
-        /// not required? dictionary not list now
-        /// </summary>
-        public void SortZoningMap()
-        {
-           // ZonedMapDict = ZonedMapDict.OrderBy(u => u.NodeIndex).ToList();
         }
 
         public void DistinguishZoningNodes(int[] nodeIdArray)
         {
-            //GET ZONEDMAP NODE MATERIAL VIA NODETYPE
             int[] nodeTypeArray = new int[nodeIdArray.Length];
             for (int i = 0; i < nodeIdArray.Length; i++)
             {
                 nodeTypeArray[i] = ZonedMapDict.ElementAt(nodeIdArray[i]).Value.NodeType;
             }
-                
-            //SET MATERIAL
             SetZonedOpacitySelection(nodeIdArray, 0.75f);
             SetZonedColourSelection(nodeIdArray, nodeTypeArray);
-
-            //CHECK GAME RULES
-            foreach (int nodeId in nodeIdArray)
-            {
-                // KingdomState.UpdateNumNodeTypes();
-            }
-
-
-
-            for (int i = 0; i < ZonedMapDict.Count(); i++)
-            {
-                //glow effect red or green
-            }
         }
 
-        public void AddNodesZonedMap(int[] zonedMapNodeIds)
+        public void AddNodesZonedMap(List<BaseNode> zonedNodesList)
         {
-            foreach (int nodeId in zonedMapNodeIds)
+            foreach (BaseNode zonedNode in zonedNodesList)
             {
-                BaseNode node = GetSelectedBaseNodeZoning(nodeId);
-                ZonedMapDict.Add(nodeId, node);
+                BaseNode node = GetSelectedBaseNodeZoning(zonedNode.NodeIndex);
+                ZonedMapDict.Add(node.NodeIndex, node);
                 ZonedNumNodeTypes[node.NodeType]++;
             }
         }
 
-        public void RemoveNodesZonedMap(int[] zonedMapNodeIds)
+        public void RemoveNodesZonedMap(List<BaseNode> zonedNodesList)
         {
-            foreach (int nodeId in zonedMapNodeIds)
+            foreach (BaseNode zonedNode in zonedNodesList)
             {
-                BaseNode node = ZonedMapDict[nodeId];
-                ZonedMapDict.Remove(nodeId);
+                BaseNode node = ZonedMapDict[zonedNode.NodeIndex];
+                ZonedMapDict.Remove(node.NodeIndex);
                 ZonedNumNodeTypes[node.NodeType]--;
             }
         }
 
         public void DiscardZonedMap()
         {
-            int[] nodeIdArray = new int[ZonedMapDict.Count];
-            for (int i = 0; i < ZonedMapDict.Count; i++)
-                nodeIdArray[i] = Map[i].NodeIndex;
+            if (IsZoningMode)
+            {
+                Color redOpaque = new Color(FlareMatRed.color.r, FlareMatRed.color.g, FlareMatRed.color.b, 0);
 
-            int[] nodeTypeArray = new int[ZonedMapDict.Count];
-            for (int i = 0; i < ZonedMapDict.Count; i++)
-                nodeTypeArray[i] = Map[i].NodeType;
+                int[] nodeIdArray = new int[ZonedMapDict.Count];
+                for (int i = 0; i < ZonedMapDict.Count; i++)
+                    nodeIdArray[i] = Map[i].NodeIndex;
 
-            foreach (BaseNode node in ZonedMapDict.Values)
-                NodeList[Map[node.NodeIndex].NodeType][node.NodeIndex].gameObject.GetComponent<MeshRenderer>().material.color = nodeColours.ElementAt(node.NodeType);
+                int[] nodeTypeArray = new int[ZonedMapDict.Count];
+                for (int i = 0; i < ZonedMapDict.Count; i++)
+                    nodeTypeArray[i] = Map[i].NodeType;
 
+                foreach (BaseNode node in ZonedMapDict.Values)
+                {
+                    NodeList[Map[node.NodeIndex].NodeType][node.NodeIndex].gameObject.GetComponent<MeshRenderer>().material.color = nodeColours.ElementAt(node.NodeType);
+                    FlareDict[node.NodeIndex].GetComponent<MeshRenderer>().material.color = redOpaque;
+                }
+
+                IsZoningMode = false;
+            }
+
+            TreasuryManager.Instance.ZoningCost = 0;
+            ZonedNumNodeTypes = new int[9] { 0, 0, 0, 0, 0, 0, 0, 0, 0 };
             ZonedMapDict = new Dictionary<int, BaseNode>();
         }
 
-        public void CommitZonedMap()
+        public async Task CommitZonedMap()
         {
+            int[] nodeIndexes = new int[ZonedMapDict.Count];
+            int[] nodeTypes = new int[ZonedMapDict.Count];
             for (int i = 0; i < ZonedMapDict.Count; i++)
             {
+                nodeIndexes[i] = ZonedMapDict.ElementAt(i).Value.NodeIndex;
+                nodeTypes[i] = ZonedMapDict.ElementAt(i).Value.NodeType;
+            }
+            var result = await KingdomMapUpdateAsync(new KingdomMapUpdatePayload { NodeIndexes = nodeIndexes, NodeTypes = nodeTypes });
 
+            if (result)
+            {
+                foreach (BaseNode node in ZonedMapDict.Values)
+                {
+                    KingdomState.NumNodeTypes[node.NodeType]++;
+                    KingdomState.NumNodeTypes[Map[node.NodeIndex].NodeType]--;
+
+                    Map[node.NodeIndex] = node;
+                    NodeList[Map[node.NodeIndex].NodeType][node.NodeIndex].SetActive(false);
+                    NodeList[node.NodeType][node.NodeIndex].SetActive(true);
+                }
+            }
+            else //fail
+            {
+                Debug.Log($"CommitZonedMap Failure");
             }
         }
         #endregion
@@ -370,25 +365,6 @@ namespace Assets.Scripts.ClientManagers.Kingdom
                     if (Map[j].NodeType != i)
                         DeActivate(j, i);
                 }
-            }
-            IsZoningMode = false;
-            Flare = (GameObject)Resources.Load(@"Node/Flares/Flare", typeof(GameObject));
-            FlareMatRed = (Material)Resources.Load(@"Node/Flares/Error", typeof(Material));
-            FlareMatGreen = (Material)Resources.Load(@"Node/Flares/Success", typeof(Material));
-
-            Color redOpaque = new Color(FlareMatRed.color.r, FlareMatRed.color.g, FlareMatRed.color.b, 0);
-            Flare.GetComponent<MeshRenderer>().material.color = redOpaque;
-            //Flare.GetComponent<MeshRenderer>().material = FlareMatGreen;
-
-            for (int i = 0; i < 1980; i++)
-            {
-                int[] result = KingdomState.CalculateNodePos(i);
-                int flareX = result[0];
-                int flareY = result[1];
-                Flare.transform.position = new Vector3((float)flareX, (float)flareY, Flare.transform.position.z);
-
-                FlareDict.Add(i, Flare); //now use flares by changing material with preset colour,
-                                         //flarematred or flarematgreen, after an intial check of if if game rules are not violated
             }
         }
 
@@ -434,18 +410,10 @@ namespace Assets.Scripts.ClientManagers.Kingdom
             Blockade = (GameObject)Resources.Load(@"Node/Buildings/Blockade", typeof(GameObject));
             Wonder = (GameObject)Resources.Load(@"Node/Buildings/Wonder", typeof(GameObject));
 
-            NodeColours = new Color[]
-            {
-                Grassland.GetComponent<MeshRenderer>().material.color,
-                TownCentre.GetComponent<MeshRenderer>().material.color,
-                House.GetComponent<MeshRenderer>().material.color,
-                Library.GetComponent<MeshRenderer>().material.color,
-                Factory.GetComponent<MeshRenderer>().material.color,
-                MTower.GetComponent<MeshRenderer>().material.color,
-                Road.GetComponent<MeshRenderer>().material.color,
-                Blockade.GetComponent<MeshRenderer>().material.color,
-                Wonder.GetComponent<MeshRenderer>().material.color,
-            };
+            IsZoningMode = false;
+            Flare = (GameObject)Resources.Load(@"Node/Flares/Flare", typeof(GameObject));
+            FlareMatRed = (Material)Resources.Load(@"Node/Flares/Error", typeof(Material));
+            FlareMatGreen = (Material)Resources.Load(@"Node/Flares/Success", typeof(Material));
         }
 
         public void SeedNodePooling()
@@ -494,12 +462,39 @@ namespace Assets.Scripts.ClientManagers.Kingdom
                             WonderDict.Add(j, Instantiate(Grassland, new Vector3(KingdomState.CalculateNodePos(j)[0], KingdomState.CalculateNodePos(j)[1], 1f), Quaternion.identity));
                             break;
                     }
+                    
+                    if (i != 0)
+                        continue;
+                    else if (i == 0 && j == 0)
+                    {
+                        Color redOpaque = new Color(FlareMatRed.color.r, FlareMatRed.color.g, FlareMatRed.color.b, 0);
+                        Flare.GetComponent<MeshRenderer>().sharedMaterial.color = redOpaque;
+                    }
+                    else if (i == 0)
+                    {
+                        int[] flarePos = KingdomState.CalculateNodePos(i);// 0 == x 1 == y
+                        Flare.transform.position = new Vector3((float)flarePos[0], (float)flarePos[1], Flare.transform.position.z);
+                        FlareDict.Add(i, Flare);
+                    }
                 }
             }
             NodeList = new List<Dictionary<int, GameObject>>
             {
                 GrasslandDict, TownCentreDict, HouseDict, LibraryDict, FactoryDict, RoadDict, BlockadeDict, MTowerDict, WonderDict
             };
+            NodeColours = new Color[]
+            {
+                GrasslandDict[0].GetComponent<MeshRenderer>().material.color,
+                TownCentreDict[0].GetComponent<MeshRenderer>().material.color,
+                HouseDict[0].GetComponent<MeshRenderer>().material.color,
+                LibraryDict[0].GetComponent<MeshRenderer>().material.color,
+                FactoryDict[0].GetComponent<MeshRenderer>().material.color,
+                MTowerDict[0].GetComponent<MeshRenderer>().material.color,
+                RoadDict[0].GetComponent<MeshRenderer>().material.color,
+                BlockadeDict[0].GetComponent<MeshRenderer>().material.color,
+                WonderDict[0].GetComponent<MeshRenderer>().material.color,
+            };
+
         }
         #endregion
 

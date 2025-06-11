@@ -11,6 +11,7 @@ using MonoMonarchNetworkFramework.Game.Character;
 using MonoMonarchNetworkFramework.Game.Soupkitchen;
 using MonoMonarchNetworkFramework.Game.Kingdom;
 using MonoMonarchNetworkFramework.Game.Armoury;
+using MonoMonarchNetworkFramework.Game.Kingdom.Map;
 
 namespace Assets.Scripts.ClientManagers.Game
 {
@@ -34,7 +35,8 @@ namespace Assets.Scripts.ClientManagers.Game
     public interface IKingdomService
     {
         Task<IKingdomLoadResponse> KingdomLoadAsync();
-        //UPDATE KINGDOM
+        Task<IKingdomMapUpdateResponse> KingdomMapUpdateAsync(KingdomMapUpdatePayload payload);
+
         //UPDATE KINGDOM NAME
     }
     public interface IArmouryService

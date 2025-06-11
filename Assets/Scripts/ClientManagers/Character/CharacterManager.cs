@@ -1,10 +1,15 @@
-﻿using MonoMonarchNetworkFramework.Game.Kingdom;
+﻿using Assets.Scripts.ClientManagers.Game;
+using MonoMonarchGameFramework.Game.Character;
+using MonoMonarchGameFramework.Game.Treasury;
 using MonoMonarchNetworkFramework;
-using System;
-using UnityEngine;
-using Assets.Scripts.ClientManagers.Game;
 using MonoMonarchNetworkFramework.Game.Character;
+using MonoMonarchNetworkFramework.Game.Kingdom;
+using MonoMonarchNetworkFramework.Game.Treasury;
+using Newtonsoft.Json;
+using System;
+using System.IO;
 using System.Threading.Tasks;
+using UnityEngine;
 
 
 namespace Assets.Scripts.ClientManagers.Character
@@ -33,6 +38,14 @@ namespace Assets.Scripts.ClientManagers.Character
                 return _instance;
             }
         }
+        public static void ResetInstance()
+        {
+            if (_instance != null)
+            {
+                Destroy(_instance.gameObject);
+                _instance = null;
+            }
+        }
         private void Awake()
         {
             if (_instance != null && _instance != this)
@@ -50,9 +63,16 @@ namespace Assets.Scripts.ClientManagers.Character
         #region Character Properties
         public CharacterLoadResponse CharacterLoadResponse { get; set; }
         public ErrorResponse CharacterErrorResponse { get; set; }
-
-        // [SerializeField] private string _soupkitchenC_;
-        //public string SoupkitchenC_ { get => _soupkitchenC_; set => _soupkitchenC_ = value; }
+        public CharacterState CharacterState { get => _characterState; set => _characterState = value; }
+        private CharacterState DeserialiseCharacterState(string serialisedCharacterState)
+        {
+            using (StringReader sr = new StringReader(serialisedCharacterState))
+            {
+                using (JsonReader reader = new JsonTextReader(sr))
+                    return new JsonSerializer().Deserialize<CharacterState>(reader);
+            }
+        }
+        [SerializeField] private CharacterState _characterState;
 
         #endregion
 
@@ -65,8 +85,7 @@ namespace Assets.Scripts.ClientManagers.Character
                 {
                     CharacterLoadResponse = characterLoadResponse;
 
-                    //TreasuryCoinBag = SoupkitchenLoadResponse.CoinbagArray;
-                    //TreasuryTotalCoin = SoupkitchenLoadResponse.TotalCoin;
+                    CharacterState = DeserialiseCharacterState(CharacterLoadResponse.CharacterState);
                 }
                 else if (response is ErrorResponse errorResponse)
                 {
@@ -91,6 +110,7 @@ namespace Assets.Scripts.ClientManagers.Character
         public void ClearCharacterCache()
         {
             CharacterLoadResponse = null;
+            CharacterState = null;
         }
     }
 }

@@ -32,6 +32,14 @@ namespace Assets.Scripts.ClientManagers.Armoury
                 return _instance;
             }
         }
+        public static void ResetInstance()
+        {
+            if (_instance != null)
+            {
+                Destroy(_instance.gameObject);
+                _instance = null;
+            }
+        }
         private void Awake()
         {
             if (_instance != null && _instance != this)
