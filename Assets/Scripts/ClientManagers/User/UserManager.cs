@@ -124,10 +124,8 @@ namespace Assets.Scripts.ClientManagers.User
                     if (await GameManager.Instance.LoadGameState())
                     {
                         GameManager.Instance.NavToScene("BTN_LOGIN_SUBMIT_L");
-                        GameManager.Instance.LoginProcedure();
-                    }
-                        
 
+                    }
                     else GameManager.Instance.ClearGameCache();
                 }
                 else if (response is ErrorResponse errorResponse)

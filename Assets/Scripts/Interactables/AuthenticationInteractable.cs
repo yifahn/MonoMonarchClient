@@ -38,7 +38,8 @@ namespace Assets.Scripts.Interactables
                     string passwordLogin = GameObject.Find("INPUT_PASSWORD_L").GetComponentInChildren<TMP_InputField>().text;
 
                     await UserManager.Instance.LoginAsync(passwordLogin);
-                   //return doesn't execute if success - ends here
+                    
+                    //return doesn't execute if success - ends here
                     return;
                 /*
                 string email = GameObject.Find("INPUT_EMAIL_R").GetComponentInChildren<TMP_InputField>().text;

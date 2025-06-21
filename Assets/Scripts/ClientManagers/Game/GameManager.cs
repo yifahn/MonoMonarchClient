@@ -27,12 +27,11 @@ using UnityEditor.Experimental.GraphView;
 
 namespace Assets.Scripts.ClientManagers.Game
 {
-    [Serializable]
     public class GameManager : MonoBehaviour
     {
         #region Game Singleton
         private static GameManager _instance;
-        [SerializeField] private static IGameService _gameService { get; set; }
+        [SerializeField] private static IGameService _gameService { get; set; } //can't serialise interface - remove
 
         public static GameManager Instance
         {
@@ -102,11 +101,14 @@ namespace Assets.Scripts.ClientManagers.Game
                 {
                     zonedNodesListForAdd.Add(KingdomManager.Instance.GetSelectedBaseNodeZoning(i));
                 }
+
+                //if ()
             }
 
             //actions removal and addition of zoned nodes in ZonedMapDict - also handles node type num tracking 
             KingdomManager.Instance.RemoveNodesZonedMap(zonedNodesListForRemove);
             KingdomManager.Instance.AddNodesZonedMap(zonedNodesListForAdd);
+
 
             if (!KingdomManager.Instance.IsZoningMode)
             {
@@ -129,7 +131,7 @@ namespace Assets.Scripts.ClientManagers.Game
 
                 //continue distinguishing remaining newly altered zoned nodes
                 KingdomManager.Instance.DistinguishZoningNodes(zonedNodesListForAdd.Select(node => node.NodeIndex).ToArray());
-                
+
 
                 Color flareMat;
                 if (TreasuryManager.IsSufficientCoin(KingdomManager.Instance.ZonedNumNodeTypes, TreasuryManager.Instance.TreasuryState.GetTotalCoin()))
@@ -138,13 +140,20 @@ namespace Assets.Scripts.ClientManagers.Game
                     if (KingdomManager.Instance.FlareDict[nodeIndexes[0]].GetComponent<Color>() != flareMat)
                     {   //if flares were red, redraw them all as green
                         foreach (int nodeId in KingdomManager.Instance.ZonedMapDict.Keys)
+                        {
+                            KingdomManager.Instance.FlareDict[nodeId].SetActive(true);
                             KingdomManager.Instance.FlareDict[nodeId].GetComponent<MeshRenderer>().material.color = flareMat;
+                        }
                         Debug.Log($"SZMAE #2");
                     }
                     else
                     {   //if the flare is already green, only redraw the added zoned node's flares
                         foreach (int nodeId in nodeIndexes)
+                        {
+                            KingdomManager.Instance.FlareDict[nodeId].SetActive(true);
                             KingdomManager.Instance.FlareDict[nodeId].GetComponent<MeshRenderer>().material.color = flareMat;
+                        }
+
                         Debug.Log($"SZMAE #3");
                     }
 
@@ -155,13 +164,23 @@ namespace Assets.Scripts.ClientManagers.Game
                     if (KingdomManager.Instance.FlareDict[nodeIndexes[0]].GetComponent<Color>() != flareMat)
                     {   //if flares were green, redraw them all as red
                         foreach (int nodeId in KingdomManager.Instance.ZonedMapDict.Keys)
+                        {
+                            if (KingdomManager.Instance.FlareDict[nodeId].activeSelf == false)
+                                KingdomManager.Instance.FlareDict[nodeId].SetActive(true);
                             KingdomManager.Instance.FlareDict[nodeId].GetComponent<MeshRenderer>().material.color = flareMat;
+                        }
+
                         Debug.Log($"SZMAE #4");
                     }
                     else
                     {   //if the flare is already red, only redraw the added zoned node's flares
                         foreach (int nodeId in nodeIndexes)
+                        {
+                            if (KingdomManager.Instance.FlareDict[nodeId].activeSelf == false)
+                                KingdomManager.Instance.FlareDict[nodeId].SetActive(true);
                             KingdomManager.Instance.FlareDict[nodeId].GetComponent<MeshRenderer>().material.color = flareMat;
+                        }
+
                         Debug.Log($"SZMAE #5");
                     }
                 }
@@ -185,6 +204,8 @@ namespace Assets.Scripts.ClientManagers.Game
             if (!await ArmouryManager.Instance.ArmouryLoadAsync()) return false;
             // if (!await BattleboardManager.Instance.BattleboardLoadAsync()) return false;
 
+            //KingdomManager.Instance.KingdomMapGenerate();
+
             Debug.Log("Game state loaded successfully");
             return true;
         }
@@ -192,10 +213,7 @@ namespace Assets.Scripts.ClientManagers.Game
         public void NavToScene(string sceneName)
         {
             SceneManager.LoadScene(_gameService.ResolveScene(sceneName));
-        }
-        public void LoginProcedure()
-        {
-            KingdomManager.Instance.KingdomMapGenerate();
+            Debug.Log($"Navigated to scene: {sceneName}");
         }
         public void ClearGameCache()
         {

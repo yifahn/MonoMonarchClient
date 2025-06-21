@@ -1,43 +1,70 @@
-﻿using System;
-using System.IO;
-using System.Threading.Tasks;
-using System.Collections.Generic;
-using System.Linq;
-
-using UnityEngine;
-
-using Unity.VisualScripting;
-
-using Newtonsoft.Json;
-
-using Assets.Scripts.ClientManagers.Game;
-
-using MonoMonarchNetworkFramework;
-using MonoMonarchNetworkFramework.Game.Kingdom;
-using MonoMonarchNetworkFramework.Game.Soupkitchen;
-
+﻿using Assets.Scripts.ClientManagers.Game;
+using Assets.Scripts.ClientManagers.Treasury;
 using MonoMonarchGameFramework.Game;
 using MonoMonarchGameFramework.Game.Kingdom;
 using MonoMonarchGameFramework.Game.Kingdom.Nodes;
-using MonoMonarchGameFramework.Game.Kingdom.Nodes.TownCentre;
+using MonoMonarchGameFramework.Game.Kingdom.Nodes.Blockade;
+using MonoMonarchGameFramework.Game.Kingdom.Nodes.Factory;
 using MonoMonarchGameFramework.Game.Kingdom.Nodes.Grassland;
-
 using MonoMonarchGameFramework.Game.Kingdom.Nodes.House;
 using MonoMonarchGameFramework.Game.Kingdom.Nodes.Library;
-using MonoMonarchGameFramework.Game.Kingdom.Nodes.Factory;
-using MonoMonarchGameFramework.Game.Kingdom.Nodes.Road;
-using MonoMonarchGameFramework.Game.Kingdom.Nodes.Blockade;
 using MonoMonarchGameFramework.Game.Kingdom.Nodes.MTower;
+using MonoMonarchGameFramework.Game.Kingdom.Nodes.Road;
+using MonoMonarchGameFramework.Game.Kingdom.Nodes.TownCentre;
 using MonoMonarchGameFramework.Game.Kingdom.Nodes.Wonder;
-using Assets.Scripts.ClientManagers.Treasury;
+using MonoMonarchNetworkFramework;
+using MonoMonarchNetworkFramework.Game.Kingdom;
 using MonoMonarchNetworkFramework.Game.Kingdom.Map;
+using MonoMonarchNetworkFramework.Game.Soupkitchen;
+using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
+using TestClasses;
+using Unity.VisualScripting;
+using UnityEditor.Experimental.GraphView;
+using UnityEngine;
 
 
 namespace Assets.Scripts.ClientManagers.Kingdom
 {
+    /////for unity inspector serialisation
+    //[Serializable]
+    //public class Map : MonoBehaviour
+    //{
+    //    [SerializeField] private BaseNode[] nodes;
+    //    public BaseNode[] Nodes { get => nodes; set => nodes = value; } 
+    //}
     public class KingdomManager : MonoBehaviour
     {
+        #region Test Class
+        //[SerializeReference]
+        [SerializeReference] private TestMap testNodeMap = new TestMap { Nodes = GenerateTestNodes() };
+        //public TestMap TestNodeMap { get => testNodeMap; set => testNodeMap = value; }
+
+        public static TestNode[] GenerateTestNodes()
+        {
+            TestNode[] TestNodes = new TestNode[1980];
+            for (int i = 0; i < TestNodes.Length; i++)
+            {
+                TestNodes[i] = new TestNode
+                {
+                    Id = i,
+                    Cost = 0,
+                    Level = 1,
+                    Type = 0
+                };
+            }
+            return TestNodes;
+        }
+
+        #endregion
+
+
         #region Kingdom Singleton
+        public static int destructionCounter = 0; //for testing purposes only, remove later
         private static IKingdomService _kingdomService { get; set; }
         private static KingdomManager _instance;
         public static KingdomManager Instance
@@ -52,16 +79,20 @@ namespace Assets.Scripts.ClientManagers.Kingdom
                         GameObject singletonInstance = new GameObject(typeof(KingdomManager).Name);
                         _instance = singletonInstance.AddComponent<KingdomManager>();
                         _kingdomService = new KingdomService();
+                        Debug.Log("KINGDOMMANAGER SINGLETON HAS AWOKEN #1 - 1");
                     }
                     DontDestroyOnLoad(_instance.gameObject);
                 }
+                Debug.Log("KINGDOMMANAGER SINGLETON HAS AWOKEN #1 - 2");
                 return _instance;
             }
         }
+
         public static void ResetInstance()
         {
             if (_instance != null)
             {
+                Debug.Log("KINGDOMMANAGER SINGLETON HAS BEEN RESET");
                 Destroy(_instance.gameObject);
                 _instance = null;
             }
@@ -70,12 +101,16 @@ namespace Assets.Scripts.ClientManagers.Kingdom
         {
             if (_instance != null && _instance != this)
             {
+                destructionCounter++;//for testing purposes only, remove later
+                Debug.Log($"{destructionCounter}, ... DESTROYING KINGDOM INSTANCE");//for testing purposes only, remove later
                 Destroy(this.gameObject);
             }
             else
             {
+                Debug.Log("KINGDOMMANAGER SINGLETON HAS AWOKEN #2");
                 _instance = this;
                 DontDestroyOnLoad(this.gameObject);
+                //Instance.KingdomMapGenerate(); //initialise kingdom map assets and seed node pooling
             }
         }
         #endregion
@@ -87,6 +122,7 @@ namespace Assets.Scripts.ClientManagers.Kingdom
         public ErrorResponse KingdomErrorResponse { get; set; }
 
         public BaseNode[] Map { get => map; set => map = value; }
+        //public Map Map { get => map; set => map = value; }
         private BaseNode[] DeserialiseMap(string serialisedMap)
         {
             JsonSerializer serialiser = new JsonSerializer();
@@ -99,8 +135,8 @@ namespace Assets.Scripts.ClientManagers.Kingdom
                 }
             }
         }
-        [SerializeField] private BaseNode[] map;
-
+        private BaseNode[] map;
+        //[SerializeField] private Map map;
         public KingdomState KingdomState { get => kingdomState; set => kingdomState = value; }
         private KingdomState DeserialiseState(string serialisedState)
         {
@@ -113,7 +149,7 @@ namespace Assets.Scripts.ClientManagers.Kingdom
                 }
             }
         }
-        [SerializeField] private KingdomState kingdomState;
+        private KingdomState kingdomState;
         #endregion
 
 
@@ -133,14 +169,18 @@ namespace Assets.Scripts.ClientManagers.Kingdom
                 if (response is KingdomLoadResponse kingdomLoadResponse)
                 {
                     KingdomLoadResponse = kingdomLoadResponse;
+
                     Map = DeserialiseMap(KingdomLoadResponse.KingdomMap);
+
                     KingdomState = DeserialiseState(KingdomLoadResponse.KingdomState);
+                    Debug.Log("Load Kingdom Success");
                 }
                 else if (response is ErrorResponse errorResponse)
                 {
                     KingdomErrorResponse = errorResponse;
                     GameManager.Instance.ClearGameCache();
                     GameManager.Instance.NavToScene("btn_MainMenu_Scene");
+                    Debug.Log("Load Kingdom Failure");
                     return false;
                 }
                 return true;
@@ -151,6 +191,7 @@ namespace Assets.Scripts.ClientManagers.Kingdom
                 Debug.Log(ex);
                 GameManager.Instance.ClearGameCache();
                 GameManager.Instance.NavToScene("btn_MainMenu_Scene");
+                Debug.Log("Load Kingdom Exception");
                 return false;
             }
         }
@@ -199,16 +240,18 @@ namespace Assets.Scripts.ClientManagers.Kingdom
         public Dictionary<int, GameObject> FlareDict { get { return flareDict; } set { flareDict = value; } }
 
         private GameObject flare;
-        private Material flareMatRed, flareMatGreen;
+        private Material flareMatRed, flareMatGreen, flareMatOpaque;
         public GameObject Flare { get { return flare; } set { flare = value; } }
         public Material FlareMatRed { get { return flareMatRed; } set { flareMatRed = value; } }
         public Material FlareMatGreen { get { return flareMatGreen; } set { flareMatGreen = value; } }
+        public Material FlareMatOpaque { get { return flareMatOpaque; } set { flareMatOpaque = value; } }
 
-        public void ToggleZoning(bool enableZoningMode)
+        public void ToggleZoning(bool SetEnable)
         {
-            if (enableZoningMode && !IsZoningMode) //on
-            {
+            if (SetEnable && !IsZoningMode)
+            { 
                 IsZoningMode = true;
+
 
                 //alter node colours to visually describe proposed zoning changes
                 DistinguishZoningNodes(ZonedMapDict.Keys.ToArray());
@@ -216,22 +259,31 @@ namespace Assets.Scripts.ClientManagers.Kingdom
                 //set flare colour to opaque green if sufficient coin, else opaque red 
                 Color flareMat = TreasuryManager.IsSufficientCoin(ZonedNumNodeTypes, TreasuryManager.Instance.TreasuryState.GetTotalCoin()) ? FlareMatGreen.GetComponent<Color>() : FlareMatRed.GetComponent<Color>();
                 foreach (int nodeId in ZonedMapDict.Keys)
+                {
+                    if (FlareDict[nodeId].activeSelf == false)
+                        FlareDict[nodeId].SetActive(true); //activate flare if not already active
                     FlareDict[nodeId].GetComponent<MeshRenderer>().material.color = flareMat;
+                }
             }
-            else if (!enableZoningMode && IsZoningMode) //off
+            else if (!SetEnable && IsZoningMode)
             {
                 IsZoningMode = false;
                 foreach (BaseNode node in ZonedMapDict.Values)
                 {
-                    //reset node colour to Map's origin
+                    //reset node colour to Map's origin - inverse of DistinguishZoningNodes
                     NodeList[Map[node.NodeIndex].NodeType][node.NodeIndex].GetComponent<MeshRenderer>().material.color = nodeColours.ElementAt(node.NodeType);
 
-                    //reset flare colour to opaque red
-                    Color redOpaque = new Color(FlareMatRed.color.r, FlareMatRed.color.g, FlareMatRed.color.b, 0);
-                    FlareDict[node.NodeIndex].GetComponent<MeshRenderer>().material.color = redOpaque;
+                    //deactivate all flares
+                    if (FlareDict[node.NodeIndex].activeSelf == true)
+                        FlareDict[node.NodeIndex].SetActive(false);
                 }
             }
+            
         }
+
+        //Color redOpaque = new Color(FlareMatRed.color.r, FlareMatRed.color.g, FlareMatRed.color.b, 0);
+        //FlareDict[node.NodeIndex].GetComponent<MeshRenderer>().material.color = redOpaque;
+
         public BaseNode GetSelectedBaseNodeZoning(int nodeIndex)
         {
 
@@ -288,7 +340,24 @@ namespace Assets.Scripts.ClientManagers.Kingdom
                 ZonedNumNodeTypes[node.NodeType]--;
             }
         }
+        public bool IsFlaresActive()
+        {
+            foreach (GameObject flare in FlareDict.Values)
+            {
+                if (flare.activeSelf == true)
+                    return true;
+            }
+            return false;
+        }
+        //public bool IsFlaresActive2()
+        //{
+        //    if (FlareDict.FirstOrDefault(x => x.Value.activeSelf == true).Value is not null)
+        //        return true;
+        //    else 
+        //        return false;
 
+        //}
+        //move to GameManager
         public void DiscardZonedMap()
         {
             if (IsZoningMode)
@@ -308,7 +377,7 @@ namespace Assets.Scripts.ClientManagers.Kingdom
                     NodeList[Map[node.NodeIndex].NodeType][node.NodeIndex].gameObject.GetComponent<MeshRenderer>().material.color = nodeColours.ElementAt(node.NodeType);
                     FlareDict[node.NodeIndex].GetComponent<MeshRenderer>().material.color = redOpaque;
                 }
-
+                
                 IsZoningMode = false;
             }
 
@@ -317,6 +386,7 @@ namespace Assets.Scripts.ClientManagers.Kingdom
             ZonedMapDict = new Dictionary<int, BaseNode>();
         }
 
+        //move to GameManager
         public async Task CommitZonedMap()
         {
             int[] nodeIndexes = new int[ZonedMapDict.Count];
@@ -355,6 +425,8 @@ namespace Assets.Scripts.ClientManagers.Kingdom
             SeedNodePooling();
             ActivateMap();
 
+
+
         }
         public void ActivateMap()
         {
@@ -366,6 +438,7 @@ namespace Assets.Scripts.ClientManagers.Kingdom
                         DeActivate(j, i);
                 }
             }
+            Debug.Log("Kingdom Map Activation Complete");
         }
 
 
@@ -411,9 +484,13 @@ namespace Assets.Scripts.ClientManagers.Kingdom
             Wonder = (GameObject)Resources.Load(@"Node/Buildings/Wonder", typeof(GameObject));
 
             IsZoningMode = false;
+
             Flare = (GameObject)Resources.Load(@"Node/Flares/Flare", typeof(GameObject));
             FlareMatRed = (Material)Resources.Load(@"Node/Flares/Error", typeof(Material));
             FlareMatGreen = (Material)Resources.Load(@"Node/Flares/Success", typeof(Material));
+            FlareMatOpaque = (Material)Resources.Load(@"Node/Flares/Opaque", typeof(Material));
+
+            Debug.Log($"Initialising Kingdom Map Assets Completed");
         }
 
         public void SeedNodePooling()
@@ -432,56 +509,72 @@ namespace Assets.Scripts.ClientManagers.Kingdom
             {
                 for (int j = 0; j < 1980; j++)
                 {
+                    //original scripts mention starts at pos 1, and offsets by 3
+
+                    //camera birds eye view == z axis is on y axis, and y axis is on z axis
+                    float x = KingdomState.CalculateNodePos(j)[0];
+                    float y = KingdomState.CalculateNodePos(j)[1];
+                    float z = 1f;
+                    //each of the x,y,z coordinates need to be offset to allow a gap inbetween each instantiated node, otherwise they will overlap
+                    float offset = 3f;
+                    float xOffset = x * offset;
+                    float yOffset = y * offset;
+
+
+                    Vector3 v3 = new Vector3(xOffset, z, -yOffset); //negative yOffset
+                    Quaternion q = Quaternion.identity;
                     switch (i)
                     {
                         case 0:
-                            GrasslandDict.Add(j, Instantiate(Grassland, new Vector3(KingdomState.CalculateNodePos(j)[0], KingdomState.CalculateNodePos(j)[1], 1f), Quaternion.identity));
+                            GrasslandDict.Add(j, Instantiate(Grassland, v3, q));
                             break;
                         case 1:
-                            TownCentreDict.Add(j, Instantiate(Grassland, new Vector3(KingdomState.CalculateNodePos(j)[0], KingdomState.CalculateNodePos(j)[1], 1f), Quaternion.identity));
+                            TownCentreDict.Add(j, Instantiate(TownCentre, v3, q));
                             break;
                         case 2:
-                            HouseDict.Add(j, Instantiate(Grassland, new Vector3(KingdomState.CalculateNodePos(j)[0], KingdomState.CalculateNodePos(j)[1], 1f), Quaternion.identity));
+                            HouseDict.Add(j, Instantiate(House, v3, q));
                             break;
                         case 3:
-                            LibraryDict.Add(j, Instantiate(Grassland, new Vector3(KingdomState.CalculateNodePos(j)[0], KingdomState.CalculateNodePos(j)[1], 1f), Quaternion.identity));
+                            LibraryDict.Add(j, Instantiate(Library, v3, q));
                             break;
                         case 4:
-                            FactoryDict.Add(j, Instantiate(Grassland, new Vector3(KingdomState.CalculateNodePos(j)[0], KingdomState.CalculateNodePos(j)[1], 1f), Quaternion.identity));
+                            FactoryDict.Add(j, Instantiate(Factory, v3, q));
                             break;
                         case 5:
-                            RoadDict.Add(j, Instantiate(Grassland, new Vector3(KingdomState.CalculateNodePos(j)[0], KingdomState.CalculateNodePos(j)[1], 1f), Quaternion.identity));
+                            RoadDict.Add(j, Instantiate(Road, v3, q));
                             break;
                         case 6:
-                            BlockadeDict.Add(j, Instantiate(Grassland, new Vector3(KingdomState.CalculateNodePos(j)[0], KingdomState.CalculateNodePos(j)[1], 1f), Quaternion.identity));
+                            BlockadeDict.Add(j, Instantiate(Blockade, v3, q));
                             break;
                         case 7:
-                            MTowerDict.Add(j, Instantiate(Grassland, new Vector3(KingdomState.CalculateNodePos(j)[0], KingdomState.CalculateNodePos(j)[1], 1f), Quaternion.identity));
+                            MTowerDict.Add(j, Instantiate(MTower, v3, q));
                             break;
                         case 8:
-                            WonderDict.Add(j, Instantiate(Grassland, new Vector3(KingdomState.CalculateNodePos(j)[0], KingdomState.CalculateNodePos(j)[1], 1f), Quaternion.identity));
+                            WonderDict.Add(j, Instantiate(Wonder, v3, q));
                             break;
                     }
-                    
-                    if (i != 0)
-                        continue;
-                    else if (i == 0 && j == 0)
-                    {
-                        Color redOpaque = new Color(FlareMatRed.color.r, FlareMatRed.color.g, FlareMatRed.color.b, 0);
-                        Flare.GetComponent<MeshRenderer>().sharedMaterial.color = redOpaque;
+                    if (i == 0 && j == 0)
+                        FlareDict = new Dictionary<int, GameObject>();
+                    if (i == 0)
+                    {//instantiate flares for each node index
+                        FlareDict.Add(j, Instantiate(Flare, new Vector3(xOffset, z + z, -yOffset), Flare.transform.rotation));
+                        //FlareDict[j].GetComponent<MeshRenderer>().material = FlareMatOpaque;
+                        FlareDict[j].SetActive(false); //better to deactivate than make material transparent as a transparent material may inturpt raycasts? - might be worth it to not be triggered by raycasts and be invisible, compute-wise. something to test
                     }
-                    else if (i == 0)
-                    {
-                        int[] flarePos = KingdomState.CalculateNodePos(i);// 0 == x 1 == y
-                        Flare.transform.position = new Vector3((float)flarePos[0], (float)flarePos[1], Flare.transform.position.z);
-                        FlareDict.Add(i, Flare);
-                    }
+
+
+
+
                 }
             }
             NodeList = new List<Dictionary<int, GameObject>>
             {
                 GrasslandDict, TownCentreDict, HouseDict, LibraryDict, FactoryDict, RoadDict, BlockadeDict, MTowerDict, WonderDict
             };
+            foreach (Dictionary<int, GameObject> dict in NodeList)
+            {
+                Debug.Log($"{dict[0].name}");
+            }
             NodeColours = new Color[]
             {
                 GrasslandDict[0].GetComponent<MeshRenderer>().material.color,
@@ -494,7 +587,7 @@ namespace Assets.Scripts.ClientManagers.Kingdom
                 BlockadeDict[0].GetComponent<MeshRenderer>().material.color,
                 WonderDict[0].GetComponent<MeshRenderer>().material.color,
             };
-
+            Debug.Log($"Seed Node Pooling Completed");
         }
         #endregion
 
