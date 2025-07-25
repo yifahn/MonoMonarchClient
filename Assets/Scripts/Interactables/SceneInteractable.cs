@@ -10,7 +10,7 @@ namespace Assets.Scripts.Interactables
     {
         public void Interact()
         {
-            GameManager.Instance.NavToScene(gameObject.name);
+           // GameManager.Instance.NavToScene(gameObject.name); -deprecated
         }
     }
 }

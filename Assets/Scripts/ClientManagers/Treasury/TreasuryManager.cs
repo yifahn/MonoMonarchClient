@@ -105,8 +105,11 @@ namespace Assets.Scripts.ClientManagers.Treasury
                 else if (response is ErrorResponse errorResponse)
                 {
                     TreasuryErrorResponse = errorResponse;
+                    await LoadingScreenExtensions.LoadLoadingSceneAsync();
+                    await LoadingScreenExtensions.UnloadGameSceneAsync();
+                    await LoadingScreenExtensions.LoadMainMenuSceneAsync();
+                    await LoadingScreenExtensions.UnloadLoadingSceneAsync();
                     GameManager.Instance.ClearGameCache();
-                    GameManager.Instance.NavToScene("btn_MainMenu_Scene");
                     return false;
                 }
                 return true;
@@ -115,8 +118,11 @@ namespace Assets.Scripts.ClientManagers.Treasury
             {
                 Debug.Log("ERROR-RESPONSE FAILURE");
                 Debug.Log(ex);
+                await LoadingScreenExtensions.LoadLoadingSceneAsync();
+                await LoadingScreenExtensions.UnloadGameSceneAsync();
+                await LoadingScreenExtensions.LoadMainMenuSceneAsync();
+                await LoadingScreenExtensions.UnloadLoadingSceneAsync();
                 GameManager.Instance.ClearGameCache();
-                GameManager.Instance.NavToScene("btn_MainMenu_Scene");
                 return false;
             }
         }

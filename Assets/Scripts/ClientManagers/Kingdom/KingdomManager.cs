@@ -30,38 +30,8 @@ using UnityEngine;
 
 namespace Assets.Scripts.ClientManagers.Kingdom
 {
-    /////for unity inspector serialisation
-    //[Serializable]
-    //public class Map : MonoBehaviour
-    //{
-    //    [SerializeField] private BaseNode[] nodes;
-    //    public BaseNode[] Nodes { get => nodes; set => nodes = value; } 
-    //}
     public class KingdomManager : MonoBehaviour
     {
-        #region Test Class
-        //[SerializeReference]
-        [SerializeReference] private TestMap testNodeMap = new TestMap { Nodes = GenerateTestNodes() };
-        //public TestMap TestNodeMap { get => testNodeMap; set => testNodeMap = value; }
-
-        public static TestNode[] GenerateTestNodes()
-        {
-            TestNode[] TestNodes = new TestNode[1980];
-            for (int i = 0; i < TestNodes.Length; i++)
-            {
-                TestNodes[i] = new TestNode
-                {
-                    Id = i,
-                    Cost = 0,
-                    Level = 1,
-                    Type = 0
-                };
-            }
-            return TestNodes;
-        }
-
-        #endregion
-
 
         #region Kingdom Singleton
         public static int destructionCounter = 0; //for testing purposes only, remove later
@@ -178,8 +148,11 @@ namespace Assets.Scripts.ClientManagers.Kingdom
                 else if (response is ErrorResponse errorResponse)
                 {
                     KingdomErrorResponse = errorResponse;
+                    await LoadingScreenExtensions.LoadLoadingSceneAsync();
+                    await LoadingScreenExtensions.UnloadGameSceneAsync();
+                    await LoadingScreenExtensions.LoadMainMenuSceneAsync();
+                    await LoadingScreenExtensions.UnloadLoadingSceneAsync();
                     GameManager.Instance.ClearGameCache();
-                    GameManager.Instance.NavToScene("btn_MainMenu_Scene");
                     Debug.Log("Load Kingdom Failure");
                     return false;
                 }
@@ -189,8 +162,11 @@ namespace Assets.Scripts.ClientManagers.Kingdom
             {
                 Debug.Log("ERROR-RESPONSE FAILURE");
                 Debug.Log(ex);
+                await LoadingScreenExtensions.LoadLoadingSceneAsync();
+                await LoadingScreenExtensions.UnloadGameSceneAsync();
+                await LoadingScreenExtensions.LoadMainMenuSceneAsync();
+                await LoadingScreenExtensions.UnloadLoadingSceneAsync();
                 GameManager.Instance.ClearGameCache();
-                GameManager.Instance.NavToScene("btn_MainMenu_Scene");
                 Debug.Log("Load Kingdom Exception");
                 return false;
             }
@@ -208,8 +184,11 @@ namespace Assets.Scripts.ClientManagers.Kingdom
                 else if (response is ErrorResponse errorResponse)
                 {
                     KingdomErrorResponse = errorResponse;
+                    await LoadingScreenExtensions.LoadLoadingSceneAsync();
+                    await LoadingScreenExtensions.UnloadGameSceneAsync();
+                    await LoadingScreenExtensions.LoadMainMenuSceneAsync();
+                    await LoadingScreenExtensions.UnloadLoadingSceneAsync();
                     GameManager.Instance.ClearGameCache();
-                    GameManager.Instance.NavToScene("btn_MainMenu_Scene");
                     return false;
                 }
                 return true;
@@ -218,8 +197,11 @@ namespace Assets.Scripts.ClientManagers.Kingdom
             {
                 Debug.Log("ERROR-RESPONSE FAILURE");
                 Debug.Log(ex);
+                await LoadingScreenExtensions.LoadLoadingSceneAsync();
+                await LoadingScreenExtensions.UnloadGameSceneAsync();
+                await LoadingScreenExtensions.LoadMainMenuSceneAsync();
+                await LoadingScreenExtensions.UnloadLoadingSceneAsync();
                 GameManager.Instance.ClearGameCache();
-                GameManager.Instance.NavToScene("btn_MainMenu_Scene");
                 return false;
             }
         }
@@ -424,9 +406,6 @@ namespace Assets.Scripts.ClientManagers.Kingdom
             InitialiseKingdomMapAssets();
             SeedNodePooling();
             ActivateMap();
-
-
-
         }
         public void ActivateMap()
         {

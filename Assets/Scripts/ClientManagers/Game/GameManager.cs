@@ -1,29 +1,29 @@
-﻿using UnityEngine;
-using UnityEngine.Events;
-using UnityEngine.SceneManagement;
-
-using System.Threading.Tasks;
-using System;
-
-using Assets.Scripts.ClientManagers.User;
-using Assets.Scripts.ClientManagers.Treasury;
-using Assets.Scripts.ClientManagers.Soupkitchen;
+﻿using Assets.Scripts.ClientManagers.Armoury;
 using Assets.Scripts.ClientManagers.Battleboard;
 using Assets.Scripts.ClientManagers.Character;
 using Assets.Scripts.ClientManagers.Kingdom;
-using Assets.Scripts.ClientManagers.Armoury;
-using System.Collections.Generic;
-using MonoMonarchGameFramework.Game.Kingdom.Nodes;
+using Assets.Scripts.ClientManagers.Soupkitchen;
+using Assets.Scripts.ClientManagers.Treasury;
+using Assets.Scripts.ClientManagers.User;
+using JetBrains.Annotations;
 using MonoMonarchGameFramework.Game.Kingdom;
+using MonoMonarchGameFramework.Game.Kingdom.Nodes;
+using MonoMonarchGameFramework.Game.Kingdom.Nodes.Grassland;
+using MonoMonarchGameFramework.Game.Treasury;
 using MonoMonarchNetworkFramework;
 using Newtonsoft.Json.Linq;
+using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
-using Unity.VisualScripting;
-using MonoMonarchGameFramework.Game.Treasury;
-
+using System.Threading.Tasks;
 using TMPro.EditorUtilities;
-using MonoMonarchGameFramework.Game.Kingdom.Nodes.Grassland;
+using Unity.VisualScripting;
 using UnityEditor.Experimental.GraphView;
+using UnityEngine;
+using UnityEngine.Events;
+using UnityEngine.SceneManagement;
+using static TreeEditor.TreeEditorHelper;
 
 namespace Assets.Scripts.ClientManagers.Game
 {
@@ -70,14 +70,11 @@ namespace Assets.Scripts.ClientManagers.Game
         #region Game Event Listeners
         private UnityEvent<int[]> buildEvent;
         public UnityEvent<int[]> BuildEvent { get => buildEvent; set => buildEvent = value; }
-        // private UnityEvent serverUpdateEvent;
-        // public UnityEvent ServerUpdateEvent { get => serverUpdateEvent; set => serverUpdateEvent = value; }
+
         public void InitialiseUnityEvents()
         {
             BuildEvent = new UnityEvent<int[]>();
             BuildEvent.AddListener(SignalZonedMapAddEvent);
-            // ServerUpdateEvent = new UnityEvent();
-            // ServerUpdateEvent.AddListener(SignalUpdateBuildUI);
         }
 
         void SignalZonedMapAddEvent(int[] nodeIndexes)
@@ -90,7 +87,11 @@ namespace Assets.Scripts.ClientManagers.Game
                 if (KingdomManager.Instance.Map[i].NodeType == KingdomManager.Instance.GetSelectedBuildingState())
                 {//IF proposed node is EQUAL to Map node, remove it from ZonedMap, ELSE do nothing
                     if (KingdomManager.Instance.ZonedMapDict.TryGetValue(i, out var nodeToRemove))
+                    {
                         zonedNodesListForRemove.Add(nodeToRemove);
+                        int nodeTypeMap = KingdomManager.Instance.Map[i].NodeType;
+                        KingdomManager.Instance.NodeList[nodeTypeMap][i].GetComponent<MeshRenderer>().material.color = KingdomManager.Instance.NodeColours[nodeTypeMap];
+                    }
                 }
                 else if (KingdomManager.Instance.ZonedMapDict.TryGetValue(i, out var nodeToReplace))
                 {//IF proposed node is NOT EQUAL to ZonedMap node, remove it from ZonedMap and add the new one
@@ -117,21 +118,8 @@ namespace Assets.Scripts.ClientManagers.Game
             }
             else
             {
-                /// Only reset visuals for removed nodes that don't appear in zonedNodesListForAdd list
-                var addNodeIndices = new HashSet<int>(zonedNodesListForAdd.Select(n => n.NodeIndex));
-                foreach (var removedNode in zonedNodesListForRemove)
-                {
-                    if (!addNodeIndices.Contains(removedNode.NodeIndex))
-                    {
-                        var mapNode = KingdomManager.Instance.Map[removedNode.NodeIndex];
-                        var nodeType = mapNode.NodeType;
-                        KingdomManager.Instance.NodeList[nodeType][removedNode.NodeIndex].GetComponent<MeshRenderer>().material.color = KingdomManager.Instance.NodeColours[nodeType];
-                    }
-                }///
-
                 //continue distinguishing remaining newly altered zoned nodes
                 KingdomManager.Instance.DistinguishZoningNodes(zonedNodesListForAdd.Select(node => node.NodeIndex).ToArray());
-
 
                 Color flareMat;
                 if (TreasuryManager.IsSufficientCoin(KingdomManager.Instance.ZonedNumNodeTypes, TreasuryManager.Instance.TreasuryState.GetTotalCoin()))
@@ -197,24 +185,67 @@ namespace Assets.Scripts.ClientManagers.Game
 
         public async Task<bool> LoadGameState()
         {
-            if (!await TreasuryManager.Instance.TreasuryLoadAsync()) return false;
-            if (!await SoupkitchenManager.Instance.SoupkitchenLoadAsync()) return false;
-            if (!await CharacterManager.Instance.CharacterLoadAsync()) return false;
-            if (!await KingdomManager.Instance.KingdomLoadAsync()) return false;
-            if (!await ArmouryManager.Instance.ArmouryLoadAsync()) return false;
-            // if (!await BattleboardManager.Instance.BattleboardLoadAsync()) return false;
+            await LoadingScreenExtensions.LoadLoadingSceneAsync();
 
-            //KingdomManager.Instance.KingdomMapGenerate();
+            await LoadingScreenExtensions.LoadGameSceneAsync();
+
+            var loadingScreen = FindFirstObjectByType<LoadingScreen>().gameObject.GetComponent<LoadingScreen>();
+            loadingScreen.StagesCompleted = new bool[6] { false, false, false, false, false, false }; // change to 6 after battleboard is implemented
+
+           
+            loadingScreen.UpdateInfo("Loading Assets From Server...");
+            await Task.Delay(1000);
+
+            if (!await TreasuryManager.Instance.TreasuryLoadAsync()) return false;
+            else
+            {
+                loadingScreen.StagesCompleted[0] = true;
+                loadingScreen.IncrementStagesCompleted();
+                await Task.Delay(500);
+            }
+            if (!await SoupkitchenManager.Instance.SoupkitchenLoadAsync()) return false;
+            else
+            {
+                loadingScreen.StagesCompleted[1] = true;
+                loadingScreen.IncrementStagesCompleted();
+                await Task.Delay(500);
+            }
+            if (!await CharacterManager.Instance.CharacterLoadAsync()) return false;
+            else
+            {
+                loadingScreen.StagesCompleted[2] = true;
+                loadingScreen.IncrementStagesCompleted();
+                await Task.Delay(500);
+            }
+            if (!await KingdomManager.Instance.KingdomLoadAsync()) return false;
+            else
+            {
+                loadingScreen.StagesCompleted[3] = true;
+                loadingScreen.IncrementStagesCompleted();
+                await Task.Delay(500);
+            }
+            if (!await ArmouryManager.Instance.ArmouryLoadAsync()) return false;
+            else
+            {
+                loadingScreen.StagesCompleted[4] = true;
+                loadingScreen.IncrementStagesCompleted();
+                await Task.Delay(500);
+            }
+
+            loadingScreen.StagesCompleted[5] = true;
+            loadingScreen.IncrementStagesCompleted();
+           
+            loadingScreen.UpdateInfo("Load State Success");
 
             Debug.Log("Game state loaded successfully");
+
+            await Task.Delay(2000);
+            await LoadingScreenExtensions.UnloadMainMenuSceneAsync();
+            await LoadingScreenExtensions.UnloadLoadingSceneAsync();
+
             return true;
         }
 
-        public void NavToScene(string sceneName)
-        {
-            SceneManager.LoadScene(_gameService.ResolveScene(sceneName));
-            Debug.Log($"Navigated to scene: {sceneName}");
-        }
         public void ClearGameCache()
         {
             ArmouryManager.Instance.ClearArmouryCache();

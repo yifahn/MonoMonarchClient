@@ -21,7 +21,7 @@ namespace Assets.Scripts.ClientManagers.Game
     // 5/3/25 - read somewhere games relying on ads as business model are banned from steam - go mannequin
     public interface IGameService
     {
-        int ResolveScene(string sceneName);
+       // int ResolveScene(string sceneName);  -deprecated
     }
     public interface IUserService
     {
@@ -84,36 +84,36 @@ namespace Assets.Scripts.ClientManagers.Game
 
     public class GameService : IGameService
     {
-        public int ResolveScene(string sceneName)
-        {
-            switch (sceneName)
-            {
-                //bottom canvas
-                case "btn_MainMenu_Scene":
-                    return 0;
-                //left canvas
-                case "btn_Kingdom_Scene":
-                    return 1;
+        //public int ResolveScene(string sceneName) - deprecated
+        //{
+        //    switch (sceneName)
+        //    {
+        //        //bottom canvas
+        //        case "btn_MainMenu_Scene":
+        //            return 0;
+        //        //left canvas
+        //        case "btn_Kingdom_Scene":
+        //            return 1;
 
-                case "btn_Character_Scene":
-                    return 2;
+        //        case "btn_Character_Scene":
+        //            return 2;
 
-                case "btn_Soupkitchen_Scene":
-                    return 3;
+        //        case "btn_Soupkitchen_Scene":
+        //            return 3;
 
-                case "btn_Bazaar_Scene":
-                    return 4;
+        //        case "btn_Bazaar_Scene":
+        //            return 4;
 
-                case "btn_Battleboard_Scene":
-                    return 5;
+        //        case "btn_Battleboard_Scene":
+        //            return 5;
 
 
-                //login button on main menu
-                case "BTN_LOGIN_SUBMIT_L"://BTN_LOGIN_SUBMIT_L
-                    return 1; //register directs to tutorial scene? - login directs to map scene?
-            }
-            //default
-            return 0;
-        }
+        //        //login button on main menu
+        //        case "BTN_LOGIN_SUBMIT_L"://BTN_LOGIN_SUBMIT_L
+        //            return 1; //register directs to tutorial scene? - login directs to map scene?
+        //    }
+        //    //default
+        //    return 0;
+        //}
     }
 }

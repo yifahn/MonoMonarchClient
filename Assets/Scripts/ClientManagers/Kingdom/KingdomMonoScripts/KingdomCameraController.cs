@@ -113,19 +113,22 @@ public class KingdomCameraController : MonoBehaviour
 
     private void HandleCameraZoom()
     {
-        float scroll = Input.GetAxis("Mouse ScrollWheel");
-        if (Mathf.Abs(scroll) > 0.01f)
+        if (Input.GetKey(KeyCode.LeftShift))
         {
-            Vector3 pos = Camera.main.transform.position;
-            if (scroll > 0)
-                pos.y -= scroll * zoomInSpeed * Time.deltaTime;
-            else
-                pos.y -= scroll * zoomOutSpeed * Time.deltaTime;
+            float scroll = Input.GetAxis("Mouse ScrollWheel");
+            if (Mathf.Abs(scroll) > 0.01f)
+            {
+                Vector3 pos = Camera.main.transform.position;
+                if (scroll > 0)
+                    pos.y -= scroll * zoomInSpeed * Time.deltaTime;
+                else
+                    pos.y -= scroll * zoomOutSpeed * Time.deltaTime;
 
-            pos.y = Mathf.Clamp(pos.y, minY, maxY);
-            pos.x = Mathf.Clamp(pos.x, minPanX, maxPanX);
-            pos.z = Mathf.Clamp(pos.z, minPanZ, maxPanZ);
-            Camera.main.transform.position = pos;
+                pos.y = Mathf.Clamp(pos.y, minY, maxY);
+                pos.x = Mathf.Clamp(pos.x, minPanX, maxPanX);
+                pos.z = Mathf.Clamp(pos.z, minPanZ, maxPanZ);
+                Camera.main.transform.position = pos;
+            }
         }
     }
 }

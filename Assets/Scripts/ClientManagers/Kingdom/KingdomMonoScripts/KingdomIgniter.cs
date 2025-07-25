@@ -10,16 +10,16 @@ namespace Assets.Scripts.ClientManagers.Kingdom.KingdomMonoScripts
     public class KingdomIgniter : MonoBehaviour
     {
 
-       
+
 
         void Start()
         {
-            KingdomManager.Instance.KingdomMapGenerate();
+           // KingdomManager.Instance.KingdomMapGenerate();
         }
 
 
 
-       
+
         ///// /////////////////////////////////////////////////////////////////////////
 
         //[Header("Camera Pan Margins")]

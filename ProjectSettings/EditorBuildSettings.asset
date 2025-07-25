@@ -9,19 +9,9 @@ EditorBuildSettings:
     path: Assets/Scenes/MainMenu.unity
     guid: 02d3e9ffb25103c4e99329b6af2b3a70
   - enabled: 1
-    path: Assets/Scenes/Kingdom.unity
+    path: Assets/Scenes/MonoMonarch.unity
     guid: 9fc0d4010bbf28b4594072e72b8655ab
   - enabled: 1
-    path: Assets/Scenes/Character.unity
-    guid: f8bbbde6facb5d74dbd4397b482e985d
-  - enabled: 1
-    path: Assets/Scenes/SoupKitchen.unity
-    guid: 4fbf40812c90dfa46bd02eb01cdc92b8
-  - enabled: 1
-    path: Assets/Scenes/Bazaar.unity
-    guid: 4201fd6b5c33bc344aa668dbbfc2d0ae
-  - enabled: 1
-    path: Assets/Scenes/Battleboard.unity
-    guid: f57a20f3a53a02c4080317005e5638be
+    path: Assets/Scenes/Loading.unity
+    guid: 0e08f26ae0ed96e4b96da413db0af650
   m_configObjects: {}
-  m_UseUCBPForAssetBundles: 0

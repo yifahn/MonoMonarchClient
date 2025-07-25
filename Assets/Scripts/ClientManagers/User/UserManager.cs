@@ -123,10 +123,15 @@ namespace Assets.Scripts.ClientManagers.User
                     UserLoginResponse = loginResponse;
                     if (await GameManager.Instance.LoadGameState())
                     {
-                        GameManager.Instance.NavToScene("BTN_LOGIN_SUBMIT_L");
-
+                        Debug.Log("REACHED HERE");
+                        KingdomManager.Instance.KingdomMapGenerate();
                     }
-                    else GameManager.Instance.ClearGameCache();
+                    else
+                    {
+                        await LoadingScreenExtensions.UnloadGameSceneAsync();
+                        await LoadingScreenExtensions.UnloadLoadingSceneAsync();
+                        GameManager.Instance.ClearGameCache();
+                    }
                 }
                 else if (response is ErrorResponse errorResponse)
                 {
@@ -153,14 +158,21 @@ namespace Assets.Scripts.ClientManagers.User
                 {
                     
                     UserErrorResponse = null;
+                    await LoadingScreenExtensions.LoadLoadingSceneAsync();
+                    await LoadingScreenExtensions.UnloadGameSceneAsync();
+                    await LoadingScreenExtensions.LoadMainMenuSceneAsync();
+                    await LoadingScreenExtensions.UnloadLoadingSceneAsync();
                     GameManager.Instance.ClearGameCache();
-                    GameManager.Instance.NavToScene("btn_MainMenu_Scene");
                 }
                 else if (response is ErrorResponse errorResponse)
                 {
                     UserErrorResponse = errorResponse;
                     GameManager.Instance.ClearGameCache();
-                    GameManager.Instance.NavToScene("btn_MainMenu_Scene");
+                    //GameManager.Instance.NavToScene("btn_MainMenu_Scene"); -deprecated
+                    await LoadingScreenExtensions.LoadLoadingSceneAsync();
+                    await LoadingScreenExtensions.UnloadGameSceneAsync();
+                    await LoadingScreenExtensions.LoadMainMenuSceneAsync();
+                    await LoadingScreenExtensions.UnloadLoadingSceneAsync();
                 }
             }
             catch (Exception ex)
@@ -168,7 +180,11 @@ namespace Assets.Scripts.ClientManagers.User
                 Debug.Log("ERROR-RESPONSE FAILURE");
                 Debug.Log(ex);
                 GameManager.Instance.ClearGameCache();
-                GameManager.Instance.NavToScene("btn_MainMenu_Scene");
+                //GameManager.Instance.NavToScene("btn_MainMenu_Scene"); -deprecated
+                await LoadingScreenExtensions.LoadLoadingSceneAsync();
+                await LoadingScreenExtensions.UnloadGameSceneAsync();
+                await LoadingScreenExtensions.LoadMainMenuSceneAsync();
+                await LoadingScreenExtensions.UnloadLoadingSceneAsync();
             }
         }
         public static int RefreshTokenAttempts { get; set; } = 0; //ceases infinite loop of requesting token pair from server if refreshtoken is expired
@@ -190,7 +206,12 @@ namespace Assets.Scripts.ClientManagers.User
                     {
                         UserErrorResponse = response as ErrorResponse;
                         GameManager.Instance.ClearGameCache();
-                        GameManager.Instance.NavToScene("btn_MainMenu_Scene");
+                        // GameManager.Instance.NavToScene("btn_MainMenu_Scene"); -deprecated
+                        await  LoadingScreenExtensions.LoadLoadingSceneAsync();
+                        await LoadingScreenExtensions.UnloadGameSceneAsync();
+                        await LoadingScreenExtensions.LoadMainMenuSceneAsync();
+                        await LoadingScreenExtensions.UnloadLoadingSceneAsync();
+                        GameManager.Instance.ClearGameCache();
                     }
                 }
             }
@@ -199,7 +220,12 @@ namespace Assets.Scripts.ClientManagers.User
                 Debug.Log("ERROR-RESPONSE FAILURE");
                 Debug.Log(ex);
                 GameManager.Instance.ClearGameCache();
-                GameManager.Instance.NavToScene("btn_MainMenu_Scene");
+                // GameManager.Instance.NavToScene("btn_MainMenu_Scene"); -deprecated
+                await LoadingScreenExtensions.LoadLoadingSceneAsync();
+                await LoadingScreenExtensions.UnloadGameSceneAsync();
+                await LoadingScreenExtensions.LoadMainMenuSceneAsync();
+                await LoadingScreenExtensions.UnloadLoadingSceneAsync();
+                GameManager.Instance.ClearGameCache();
             }
         }
         public void ClearUserCache()
