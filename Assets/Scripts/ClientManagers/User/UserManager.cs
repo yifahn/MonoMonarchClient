@@ -1,21 +1,19 @@
-using System;
-using System.Threading.Tasks;
-
-using UnityEngine;
-using Unity.VisualScripting;
-
-using Newtonsoft.Json;
-
+using Assets.Scripts.ClientManagers.Game;
+using Assets.Scripts.ClientManagers.Kingdom;
+using MonoMonarchGameFramework.Game.Kingdom.Nodes;
 using MonoMonarchNetworkFramework;
-using MonoMonarchNetworkFramework.Authentication.Register;
 using MonoMonarchNetworkFramework.Authentication.Login;
 using MonoMonarchNetworkFramework.Authentication.Logout;
 using MonoMonarchNetworkFramework.Authentication.RefreshToken;
-
-using Assets.Scripts.ClientManagers.Game;
+using MonoMonarchNetworkFramework.Authentication.Register;
+using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+using Unity.VisualScripting;
 using UnityEditor.PackageManager;
-using Assets.Scripts.ClientManagers.Kingdom;
+using UnityEngine;
 
 namespace Assets.Scripts.ClientManagers.User
 {
@@ -124,7 +122,12 @@ namespace Assets.Scripts.ClientManagers.User
                     if (await GameManager.Instance.LoadGameState())
                     {
                         Debug.Log("REACHED HERE");
+                        KingdomManager.Instance.ZonedMapDict = new Dictionary<int, BaseNode>();
+                        GameManager.Instance.InitialiseGameCanvas();
+                        GameManager.Instance.SetGameUICanvas();
+                        GameManager.Instance.SetKingdomUICanvas();
                         KingdomManager.Instance.KingdomMapGenerate();
+                        
                     }
                     else
                     {

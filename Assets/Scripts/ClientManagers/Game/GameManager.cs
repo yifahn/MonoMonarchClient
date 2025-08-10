@@ -1,10 +1,12 @@
 ﻿using Assets.Scripts.ClientManagers.Armoury;
 using Assets.Scripts.ClientManagers.Battleboard;
 using Assets.Scripts.ClientManagers.Character;
+using Assets.Scripts.ClientManagers.Game.Loading;
 using Assets.Scripts.ClientManagers.Kingdom;
 using Assets.Scripts.ClientManagers.Soupkitchen;
 using Assets.Scripts.ClientManagers.Treasury;
 using Assets.Scripts.ClientManagers.User;
+using Assets.Scripts.Interactables;
 using JetBrains.Annotations;
 using MonoMonarchGameFramework.Game.Kingdom;
 using MonoMonarchGameFramework.Game.Kingdom.Nodes;
@@ -17,13 +19,16 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using TMPro;
 using TMPro.EditorUtilities;
 using Unity.VisualScripting;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.SceneManagement;
-using static TreeEditor.TreeEditorHelper;
+using UnityEngine.UI;
+
+
 
 namespace Assets.Scripts.ClientManagers.Game
 {
@@ -90,7 +95,7 @@ namespace Assets.Scripts.ClientManagers.Game
                     {
                         zonedNodesListForRemove.Add(nodeToRemove);
                         int nodeTypeMap = KingdomManager.Instance.Map[i].NodeType;
-                        KingdomManager.Instance.NodeList[nodeTypeMap][i].GetComponent<MeshRenderer>().material.color = KingdomManager.Instance.NodeColours[nodeTypeMap];
+                        KingdomManager.Instance.NodeList[nodeTypeMap][i].GetComponent<MeshRenderer>().material = KingdomManager.Instance.NodeMaterials[nodeTypeMap];
                     }
                 }
                 else if (KingdomManager.Instance.ZonedMapDict.TryGetValue(i, out var nodeToReplace))
@@ -106,7 +111,7 @@ namespace Assets.Scripts.ClientManagers.Game
                 //if ()
             }
 
-            //actions removal and addition of zoned nodes in ZonedMapDict - also handles node type num tracking 
+            //actions removal and addition of zoned nodeArray in ZonedMapDict - also handles node type num tracking 
             KingdomManager.Instance.RemoveNodesZonedMap(zonedNodesListForRemove);
             KingdomManager.Instance.AddNodesZonedMap(zonedNodesListForAdd);
 
@@ -114,23 +119,25 @@ namespace Assets.Scripts.ClientManagers.Game
             if (!KingdomManager.Instance.IsZoningMode)
             {
                 Debug.Log($"SZMAE #1");
-                KingdomManager.Instance.ToggleZoning(true);
+                KingdomManager.Instance.ToggleZoning();
             }
             else
             {
-                //continue distinguishing remaining newly altered zoned nodes
-                KingdomManager.Instance.DistinguishZoningNodes(zonedNodesListForAdd.Select(node => node.NodeIndex).ToArray());
+                //continue distinguishing remaining newly altered zoned nodeArray
+                Debug.Log(KingdomManager.Instance.IsZoningMode);
+                Debug.Log("Accessing DistinguishZoningNodes() 1");
+                KingdomManager.Instance.DistinguishZoningNodes(zonedNodesListForAdd.Select(node => node.NodeIndex).ToArray(),0.75f);
 
-                Color flareMat;
+                Material flareMat;
                 if (TreasuryManager.IsSufficientCoin(KingdomManager.Instance.ZonedNumNodeTypes, TreasuryManager.Instance.TreasuryState.GetTotalCoin()))
                 {
-                    flareMat = KingdomManager.Instance.FlareMatGreen.GetComponent<Color>();
-                    if (KingdomManager.Instance.FlareDict[nodeIndexes[0]].GetComponent<Color>() != flareMat)
+                    flareMat = KingdomManager.Instance.FlareMatGreen;//color;
+                    if (KingdomManager.Instance.FlareDict[nodeIndexes[0]].GetComponent<MeshRenderer>().material != flareMat)
                     {   //if flares were red, redraw them all as green
                         foreach (int nodeId in KingdomManager.Instance.ZonedMapDict.Keys)
                         {
                             KingdomManager.Instance.FlareDict[nodeId].SetActive(true);
-                            KingdomManager.Instance.FlareDict[nodeId].GetComponent<MeshRenderer>().material.color = flareMat;
+                            KingdomManager.Instance.FlareDict[nodeId].GetComponent<MeshRenderer>().material = flareMat;
                         }
                         Debug.Log($"SZMAE #2");
                     }
@@ -139,7 +146,7 @@ namespace Assets.Scripts.ClientManagers.Game
                         foreach (int nodeId in nodeIndexes)
                         {
                             KingdomManager.Instance.FlareDict[nodeId].SetActive(true);
-                            KingdomManager.Instance.FlareDict[nodeId].GetComponent<MeshRenderer>().material.color = flareMat;
+                            KingdomManager.Instance.FlareDict[nodeId].GetComponent<MeshRenderer>().material = flareMat;
                         }
 
                         Debug.Log($"SZMAE #3");
@@ -148,14 +155,14 @@ namespace Assets.Scripts.ClientManagers.Game
                 }
                 else if (!TreasuryManager.IsSufficientCoin(KingdomManager.Instance.ZonedNumNodeTypes, TreasuryManager.Instance.TreasuryState.GetTotalCoin()))
                 {
-                    flareMat = KingdomManager.Instance.FlareMatRed.GetComponent<Color>();
-                    if (KingdomManager.Instance.FlareDict[nodeIndexes[0]].GetComponent<Color>() != flareMat)
+                    flareMat = KingdomManager.Instance.FlareMatRed;
+                    if (KingdomManager.Instance.FlareDict[nodeIndexes[0]].GetComponent<MeshRenderer>().material != flareMat)
                     {   //if flares were green, redraw them all as red
                         foreach (int nodeId in KingdomManager.Instance.ZonedMapDict.Keys)
                         {
                             if (KingdomManager.Instance.FlareDict[nodeId].activeSelf == false)
                                 KingdomManager.Instance.FlareDict[nodeId].SetActive(true);
-                            KingdomManager.Instance.FlareDict[nodeId].GetComponent<MeshRenderer>().material.color = flareMat;
+                            KingdomManager.Instance.FlareDict[nodeId].GetComponent<MeshRenderer>().material = flareMat;
                         }
 
                         Debug.Log($"SZMAE #4");
@@ -166,7 +173,7 @@ namespace Assets.Scripts.ClientManagers.Game
                         {
                             if (KingdomManager.Instance.FlareDict[nodeId].activeSelf == false)
                                 KingdomManager.Instance.FlareDict[nodeId].SetActive(true);
-                            KingdomManager.Instance.FlareDict[nodeId].GetComponent<MeshRenderer>().material.color = flareMat;
+                            KingdomManager.Instance.FlareDict[nodeId].GetComponent<MeshRenderer>().material = flareMat;
                         }
 
                         Debug.Log($"SZMAE #5");
@@ -178,7 +185,8 @@ namespace Assets.Scripts.ClientManagers.Game
             TreasuryManager.Instance.AddZoningCost(zonedNodesListForAdd);
             Debug.Log($"Zoning cost total: {TreasuryManager.Instance.ZoningCost}, Player coin total: {TreasuryManager.Instance.TreasuryState.GetTotalCoin()}");
         }
-
+        private int nodeIdSelected = -1;
+        public int NodeIdSelected { get => nodeIdSelected; set => nodeIdSelected = value; }
 
         #endregion
 
@@ -192,7 +200,7 @@ namespace Assets.Scripts.ClientManagers.Game
             var loadingScreen = FindFirstObjectByType<LoadingScreen>().gameObject.GetComponent<LoadingScreen>();
             loadingScreen.StagesCompleted = new bool[6] { false, false, false, false, false, false }; // change to 6 after battleboard is implemented
 
-           
+
             loadingScreen.UpdateInfo("Loading Assets From Server...");
             await Task.Delay(1000);
 
@@ -234,7 +242,7 @@ namespace Assets.Scripts.ClientManagers.Game
 
             loadingScreen.StagesCompleted[5] = true;
             loadingScreen.IncrementStagesCompleted();
-           
+
             loadingScreen.UpdateInfo("Load State Success");
 
             Debug.Log("Game state loaded successfully");
@@ -242,6 +250,7 @@ namespace Assets.Scripts.ClientManagers.Game
             await Task.Delay(2000);
             await LoadingScreenExtensions.UnloadMainMenuSceneAsync();
             await LoadingScreenExtensions.UnloadLoadingSceneAsync();
+            SceneTracker.CurrentScene = 1; //kingdom
 
             return true;
         }
@@ -255,6 +264,177 @@ namespace Assets.Scripts.ClientManagers.Game
             SoupkitchenManager.Instance.ClearSoupkitchenCache();
             TreasuryManager.Instance.ClearTreasuryCache();
             UserManager.Instance.ClearUserCache();
+            SceneTracker.CurrentScene = 0; //reset to MainMenu
+        }
+        public GameObject MainMenu { get => menu; set => menu = value; }
+        public GameObject Kingdom { get => map; set => map = value; }
+        public GameObject Soupkitchen { get => soup; set => soup = value; }
+        public GameObject Bazaar { get => bazaar; set => bazaar = value; }
+        public GameObject Battleboard { get => battle; set => battle = value; }
+        public GameObject Character { get => monarch; set => monarch = value; }
+        private GameObject monarch, map, soup, bazaar, battle, menu;
+
+        public GameObject PoliticalPoints { get => pp; set => pp = value; }
+        public GameObject SoupTimer { get => timer; set => timer = value; }
+        public GameObject Coin { get => coin; set => coin = value; }
+        private GameObject coin, pp, timer;
+
+        public void SetGameUICanvas()
+        {
+            SetBottomPanelUI();
+            SetLeftPanelUI();
+        }
+        public void SetKingdomUICanvas()
+        {
+            KingdomManager.Instance.SetRightPanelUI();
+            KingdomManager.Instance.SetTopPanelUI();
+        }
+        public void SetCharacterUICanvas()
+        {
+            //BazaarManager.Instance.SetRightPanelUI();
+            //BazaarManager.Instance.SetTopPanelUI();
+        }
+        public void SetBazaarUICanvas()
+        {
+            //CharacterManager.Instance.SetRightPanelUI();
+            //CharacterManager.Instance.SetTopPanelUI();
+        }
+        public void SetBattleboardUICanvas()
+        {
+            //CharacterManager.Instance.SetRightPanelUI();
+            //CharacterManager.Instance.SetTopPanelUI();
+        }
+        public void SetSoupkitchenUICanvas()
+        {
+            //SoupkitchenManager.Instance.SetRightPanelUI();
+            //SoupkitchenManager.Instance.SetTopPanelUI();
+        }
+        //CanvasGameComponents
+        public GameObject CanvasGameComponents { get => canvasGameComponents; set => canvasGameComponents = value; }
+        private GameObject canvasGameComponents;
+        public GameObject CanvasGame { get => canvasGame; set => canvasGame = value; }
+        private GameObject canvasGame;
+        public GameObject CanvasKingdom { get => canvasKingdom; set => canvasKingdom = value; }
+        public GameObject CanvasCharacter { get => canvasCharacter; set => canvasCharacter = value; }
+        public GameObject CanvasSoupkitchen { get => canvasSoup; set => canvasSoup = value; }
+        public GameObject CanvasBazaar { get => canvasbazaar; set => canvasbazaar = value; }
+        public GameObject CanvasBattleboard { get => canvasbattle; set => canvasbattle = value; }
+        private GameObject canvasKingdom,canvasCharacter,canvasSoup,canvasbazaar,canvasbattle;
+        public void InitialiseGameCanvas()
+        {
+            CanvasGameComponents = GameObject.Find("CanvasGameComponents");
+            CanvasGame = CanvasGameComponents.GetComponentInChildren<Transform>().Find("GameComponents").gameObject;
+            CanvasKingdom = CanvasGameComponents.GetComponentInChildren<Transform>().Find("Kingdom").gameObject ;
+            CanvasCharacter = CanvasGameComponents.GetComponentInChildren<Transform>().Find("Character").gameObject;
+            CanvasSoupkitchen = CanvasGameComponents.GetComponentInChildren<Transform>().Find("Soupkitchen").gameObject;
+            CanvasBazaar = CanvasGameComponents.GetComponentInChildren<Transform>().Find("Bazaar").gameObject;
+            CanvasBattleboard = CanvasGameComponents.GetComponentInChildren<Transform>().Find("Battleboard").gameObject;
+            CanvasGame.SetActive(true);
+            CanvasKingdom.SetActive(true);
+            SceneTracker.CurrentScene = 1;
+            CanvasCharacter.SetActive(false);
+            CanvasSoupkitchen.SetActive(false);
+            CanvasBazaar.SetActive(false);
+            CanvasBattleboard.SetActive(false);
+        }
+        /// <summary>
+        /// SceneTracker.CurrentScene
+        /// </summary>
+        /// <param name="i"></param>
+        public void ClearCanvas(int i)
+        {
+            switch (i)
+            {
+                case 1://kingdom
+                    CanvasKingdom.SetActive(false);
+                    break;
+                case 2://character
+                    CanvasCharacter.SetActive(false);
+                    break;
+                case 3://soup
+                    CanvasSoupkitchen.SetActive(false);
+                    break;
+                case 4://bazaar
+                    CanvasBazaar.SetActive(false);
+                    break;
+                case 5://battle
+                    CanvasBattleboard.SetActive(false);
+                    break;
+
+                case 0://mainmenu
+
+                    break;
+            }
+        }
+
+
+
+        public void UpdateBottomPanelUI()
+        {
+            Coin.GetComponent<TextMeshPro>().text = TreasuryManager.Instance.TreasuryState.GetTotalCoin().ToString();
+            PoliticalPoints.GetComponent<TextMeshPro>().text = CharacterManager.Instance.CharacterState.PoliticalPoints.ToString();
+            // SoupTimer.GetComponent<TextMeshPro>().text = SoupkitchenManager.Instance;
+        }
+        public void SetBottomPanelUI()
+        {
+            PoliticalPoints = GameObject.Find("tmp_PoliticalPoints");
+            SoupTimer = GameObject.Find("tmp_SoupTimer");
+            Coin = GameObject.Find("tmp_Coin");
+        }
+
+        public void SetLeftPanelUI()
+        {
+            Kingdom = GameObject.Find("btn_KingdomScene");
+            Character = GameObject.Find("btn_CharacterScene");
+            Soupkitchen = GameObject.Find("btn_SoupkitchenScene");
+            Bazaar = GameObject.Find("btn_BazaarScene");
+            Battleboard = GameObject.Find("btn_BattleboardScene");
+            MainMenu = GameObject.Find("btn_MainMenuScene");
+
+            Kingdom.GetComponent<Button>().onClick.AddListener(() => NavigateToUICanvas(1));
+            Character.GetComponent<Button>().onClick.AddListener(() => NavigateToUICanvas(2));
+            Soupkitchen.GetComponent<Button>().onClick.AddListener(() => NavigateToUICanvas(3));
+            Bazaar.GetComponent<Button>().onClick.AddListener(() => NavigateToUICanvas(4));
+            Battleboard.GetComponent<Button>().onClick.AddListener(() => NavigateToUICanvas(5));
+            MainMenu.GetComponent<Button>().onClick.AddListener(() => NavigateToUICanvas(0));
+        }
+
+
+        /// <summary>
+        /// k,c,sk,b,b
+        /// </summary>
+        /// <param name="i"></param>
+        public void NavigateToUICanvas(int i)
+        {
+            ClearCanvas(SceneTracker.CurrentScene);
+            Debug.Log($"ui update from {SceneTracker.CurrentScene} to {i}");
+            switch (i)
+            {
+                case 1://kingdom
+                    CanvasKingdom.SetActive(true);
+                    SceneTracker.CurrentScene = 1;
+                    break;
+                case 2://character
+                    CanvasCharacter.SetActive(true);
+                    SceneTracker.CurrentScene = 2;
+                    break;
+                case 3://soup
+                    CanvasSoupkitchen.SetActive(true);
+                    SceneTracker.CurrentScene = 3;
+                    break;
+                case 4://bazaar
+                    CanvasBazaar.SetActive(true);
+                    SceneTracker.CurrentScene = 4;
+                    break;
+                case 5://battle
+                    CanvasBattleboard.SetActive(true);
+                    SceneTracker.CurrentScene = 5;
+                    break;
+                case 0:
+                    //mainmenu
+
+                    break;
+            }
         }
     }
 

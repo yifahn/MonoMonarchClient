@@ -61,7 +61,7 @@ public class Building : MonoBehaviour
                     {
                         Debug.Log(hasSelectedBoxBounds1);
                         Debug.Log(hasSelectedBoxBounds2);
-                        if ((hasSelectedBoxBounds1 && hasSelectedBoxBounds2) || hit.collider.gameObject.name.Contains("City Centre") || hit.collider.gameObject.name.Contains("Road") || hit.collider.gameObject.name.Contains("Blockade") || hit.collider.gameObject.name.Contains("Grassland") || hit.collider.gameObject.name.Contains("Forest") || hit.collider.gameObject.name.Contains("Wonder") || hit.collider.gameObject.name.Contains("TowerM") || hit.collider.gameObject.name.Contains("TowerAA") || hit.collider.gameObject.name.Contains("Library") || hit.collider.gameObject.name.Contains("Factory") || hit.collider.gameObject.name.Contains("House") || hit.collider.gameObject.name.Contains("Farm"))
+                        if ((hasSelectedBoxBounds1 && hasSelectedBoxBounds2) || hit.collider.gameObject.name.Contains("City Centre") || hit.collider.gameObject.name.Contains("Road") || hit.collider.gameObject.name.Contains("Blockade") || hit.collider.gameObject.name.Contains("Grassland") || hit.collider.gameObject.name.Contains("Forest") || hit.collider.gameObject.name.Contains("Wonder") || hit.collider.gameObject.name.Contains("Tower") || hit.collider.gameObject.name.Contains("TowerAA") || hit.collider.gameObject.name.Contains("Library") || hit.collider.gameObject.name.Contains("Factory") || hit.collider.gameObject.name.Contains("House") || hit.collider.gameObject.name.Contains("Farm"))
                         {//if a raycast hits a building... NOT any other object THEN...
 
 
@@ -127,7 +127,7 @@ public class Building : MonoBehaviour
                                         Debug.Log("box2 is above and to the left of box1");
 
 
-                                        //iterate through all selected nodes until all node positions are processed
+                                        //iterate through all selected nodeArray until all node positions are processed
                                         for (float x = tempX; x >= tempX2; x -= 3f)
                                         {
                                             for (float y = tempZ; y <= tempZ2; y += 3f)
@@ -172,7 +172,7 @@ public class Building : MonoBehaviour
                                         int countY2 = int.Parse(stringCountY2);
 
 
-                                        //using these fetched variables, iterate through each node within selection and build on appropriate nodes
+                                        //using these fetched variables, iterate through each node within selection and build on appropriate nodeArray
                                         Debug.Log("reached here");
 
                                         Debug.Log(listX[0]);
@@ -216,7 +216,7 @@ public class Building : MonoBehaviour
                                     else if (tempZ == tempZ2)//middle left
                                     {
                                         float y = 0f;
-                                        //iterate through all selected nodes until all node positions are processed
+                                        //iterate through all selected nodeArray until all node positions are processed
                                         for (float x = tempX; x >= tempX2; x -= 3f)
                                         {
                                             //process position variables
@@ -257,7 +257,7 @@ public class Building : MonoBehaviour
                                         int countY2 = int.Parse(stringCountY2);
 
 
-                                        //using these fetched variables, iterate through each node within selection and build on appropriate nodes
+                                        //using these fetched variables, iterate through each node within selection and build on appropriate nodeArray
                                         Debug.Log("reached here");
 
                                         Debug.Log(listX[0]);
@@ -297,7 +297,7 @@ public class Building : MonoBehaviour
                                     }
                                     else if (tempZ > tempZ2)//bottom left
                                     {
-                                        //iterate through all selected nodes until all node positions are processed
+                                        //iterate through all selected nodeArray until all node positions are processed
                                         for (float x = tempX; x >= tempX2; x -= 3f)
                                         {
                                             for (float y = tempZ; y >= tempZ2; y -= 3f)
@@ -339,7 +339,7 @@ public class Building : MonoBehaviour
                                         int countY2 = int.Parse(stringCountY2);
 
 
-                                        //using these fetched variables, iterate through each node within selection and build on appropriate nodes
+                                        //using these fetched variables, iterate through each node within selection and build on appropriate nodeArray
                                         Debug.Log("reached here");
 
                                         Debug.Log(listX[0]);
@@ -378,7 +378,7 @@ public class Building : MonoBehaviour
                                 {
                                     if (tempZ < tempZ2)//top right
                                     {
-                                        //iterate through all selected nodes until all node positions are processed
+                                        //iterate through all selected nodeArray until all node positions are processed
                                         for (float x = tempX; x <= tempX2; x += 3f)
                                         {
                                             for (float y = tempZ; y <= tempZ2; y += 3f)
@@ -420,7 +420,7 @@ public class Building : MonoBehaviour
                                         int countY2 = int.Parse(stringCountY2);
 
 
-                                        //using these fetched variables, iterate through each node within selection and build on appropriate nodes
+                                        //using these fetched variables, iterate through each node within selection and build on appropriate nodeArray
                                         Debug.Log("reached here");
 
                                         Debug.Log(listX[0]);
@@ -456,7 +456,7 @@ public class Building : MonoBehaviour
                                     }
                                     else if (tempZ > tempZ2)//bottom right
                                     {
-                                        //iterate through all selected nodes until all node positions are processed
+                                        //iterate through all selected nodeArray until all node positions are processed
                                         for (float x = tempX; x <= tempX2; x += 3f)
                                         {
                                             for (float y = tempZ; y >= tempZ2; y -= 3f)
@@ -498,7 +498,7 @@ public class Building : MonoBehaviour
                                         int countY2 = int.Parse(stringCountY2);
 
 
-                                        //using these fetched variables, iterate through each node within selection and build on appropriate nodes
+                                        //using these fetched variables, iterate through each node within selection and build on appropriate nodeArray
                                         Debug.Log("reached here");
 
                                         Debug.Log(listX[0]);
@@ -535,7 +535,7 @@ public class Building : MonoBehaviour
                                     else if (tempZ == tempZ2)//middle right
                                     {
                                         float y = 0f;
-                                        //iterate through all selected nodes until all node positions are processed
+                                        //iterate through all selected nodeArray until all node positions are processed
                                         for (float x = tempX; x <= tempX2; x += 3f)
                                         {
                                             //process position variables
@@ -576,7 +576,7 @@ public class Building : MonoBehaviour
                                         int countY2 = int.Parse(stringCountY2);
 
 
-                                        //using these fetched variables, iterate through each node within selection and build on appropriate nodes
+                                        //using these fetched variables, iterate through each node within selection and build on appropriate nodeArray
                                         Debug.Log("reached here");
 
                                         Debug.Log(listX[0]);
@@ -618,7 +618,7 @@ public class Building : MonoBehaviour
                                 {
                                     if (tempZ < tempZ2)//top middle
                                     {
-                                        //iterate through all selected nodes until all node positions are processed
+                                        //iterate through all selected nodeArray until all node positions are processed
                                         float x = 0f;
                                         for (float y = tempZ; y <= tempZ2; y += 3f)
                                         {
@@ -660,7 +660,7 @@ public class Building : MonoBehaviour
                                         int countY2 = int.Parse(stringCountY2);
 
 
-                                        //using these fetched variables, iterate through each node within selection and build on appropriate nodes
+                                        //using these fetched variables, iterate through each node within selection and build on appropriate nodeArray
                                         Debug.Log("reached here");
 
                                         Debug.Log(listX[0]);
@@ -695,7 +695,7 @@ public class Building : MonoBehaviour
                                     }
                                     else if (tempZ > tempZ2)//bottom middle
                                     {
-                                        //iterate through all selected nodes until all node positions are processed
+                                        //iterate through all selected nodeArray until all node positions are processed
                                         for (float y = tempZ; y >= tempZ2; y -= 3f)
                                         {
                                             float x = tempX;
@@ -736,7 +736,7 @@ public class Building : MonoBehaviour
                                         int countY2 = int.Parse(stringCountY2);
 
 
-                                        //using these fetched variables, iterate through each node within selection and build on appropriate nodes
+                                        //using these fetched variables, iterate through each node within selection and build on appropriate nodeArray
                                         Debug.Log("reached here");
 
                                         Debug.Log(listX[0]);
@@ -770,7 +770,7 @@ public class Building : MonoBehaviour
                                     }
                                     else if (tempZ == tempZ2)//middle middle
                                     {
-                                        //iterate through all selected nodes until all node positions are processed
+                                        //iterate through all selected nodeArray until all node positions are processed
 
                                         //process position variables
                                         float x = tempX;
@@ -811,7 +811,7 @@ public class Building : MonoBehaviour
                                         int countY2 = int.Parse(stringCountY2);
 
 
-                                        //using these fetched variables, iterate through each node within selection and build on appropriate nodes
+                                        //using these fetched variables, iterate through each node within selection and build on appropriate nodeArray
                                         Debug.Log("reached here");
 
                                         Debug.Log(listX[0]);
@@ -1017,7 +1017,7 @@ RaycastHit hit;
 Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
 if (Physics.Raycast(ray, out hit, 500.0f))
 {
-if (hit.collider.name.Contains("Road") || hit.collider.name.Contains("Blockade") || hit.collider.name.Contains("City Centre") || hit.collider.name.Contains("House") || hit.collider.name.Contains("Library") || hit.collider.name.Contains("Factory") || hit.collider.name.Contains("Wonder") || hit.collider.name.Contains("Forest") || hit.collider.name.Contains("TowerAA") || hit.collider.name.Contains("TowerM") || hit.collider.name.Contains("Farm"))//ss
+if (hit.collider.name.Contains("Road") || hit.collider.name.Contains("Blockade") || hit.collider.name.Contains("City Centre") || hit.collider.name.Contains("House") || hit.collider.name.Contains("Library") || hit.collider.name.Contains("Factory") || hit.collider.name.Contains("Wonder") || hit.collider.name.Contains("Forest") || hit.collider.name.Contains("TowerAA") || hit.collider.name.Contains("Tower") || hit.collider.name.Contains("Farm"))//ss
 {
 if (CellState.playerSpawnBool == false && CellState.opponentSpawnBool == false)
 {
@@ -1048,7 +1048,7 @@ if (Physics.Raycast(ray, out hit, 500.0f))
 {
 Debug.Log(hasSelectedBoxBounds1);
 Debug.Log(hasSelectedBoxBounds2);
-if ((hasSelectedBoxBounds1 && hasSelectedBoxBounds2) || hit.collider.gameObject.name.Contains("Grassland") || hit.collider.gameObject.name.Contains("City Centre") || hit.collider.gameObject.name.Contains("Road") || hit.collider.gameObject.name.Contains("Blockade") || hit.collider.gameObject.name.Contains("Forest") || hit.collider.gameObject.name.Contains("Wonder") || hit.collider.gameObject.name.Contains("TowerM") || hit.collider.gameObject.name.Contains("TowerAA") || hit.collider.gameObject.name.Contains("Library") || hit.collider.gameObject.name.Contains("Factory") || hit.collider.gameObject.name.Contains("House") || hit.collider.gameObject.name.Contains("Farm"))
+if ((hasSelectedBoxBounds1 && hasSelectedBoxBounds2) || hit.collider.gameObject.name.Contains("Grassland") || hit.collider.gameObject.name.Contains("City Centre") || hit.collider.gameObject.name.Contains("Road") || hit.collider.gameObject.name.Contains("Blockade") || hit.collider.gameObject.name.Contains("Forest") || hit.collider.gameObject.name.Contains("Wonder") || hit.collider.gameObject.name.Contains("Tower") || hit.collider.gameObject.name.Contains("TowerAA") || hit.collider.gameObject.name.Contains("Library") || hit.collider.gameObject.name.Contains("Factory") || hit.collider.gameObject.name.Contains("House") || hit.collider.gameObject.name.Contains("Farm"))
 {//if a raycast hits a building... NOT any other object THEN...
 if (hasSelectedBoxBounds1 == false && hasSelectedBoxBounds2 == false) // if bounds are not set
 {
@@ -1110,7 +1110,7 @@ if (tempZ < tempZ2)//top left
  Debug.Log("box2 is above and to the left of box1");
 
 
- //iterate through all selected nodes until all node positions are processed
+ //iterate through all selected nodeArray until all node positions are processed
  for (float x = tempX; x >= tempX2; x -= 3f)
  {
      for (float y = tempZ; y <= tempZ2; y += 3f)
@@ -1152,7 +1152,7 @@ if (tempZ < tempZ2)//top left
  int countY2 = int.Parse(stringCountY2);
 
 
- //using these fetched variables, iterate through each node within selection and build on appropriate nodes
+ //using these fetched variables, iterate through each node within selection and build on appropriate nodeArray
  Debug.Log("reached here");
 
  Debug.Log(listX[0]);
@@ -1170,8 +1170,8 @@ if (tempZ < tempZ2)//top left
          count = (60 * i - (60 - j));//using x,y position calculate the position of the node within mapListL1 in plane object
          count -= 1;
          Debug.Log(count);
-         //hit.collider.gameObject.name.Contains("City Centre") || hit.collider.gameObject.name.Contains("Road") || hit.collider.gameObject.name.Contains("Blockade") || hit.collider.gameObject.name.Contains("Forest") || hit.collider.gameObject.name.Contains("Wonder") || hit.collider.gameObject.name.Contains("TowerM") || hit.collider.gameObject.name.Contains("TowerAA") || hit.collider.gameObject.name.Contains("Library") || hit.collider.gameObject.name.Contains("Factory") || hit.collider.gameObject.name.Contains("House") || hit.collider.gameObject.name.Contains("Farm")
-         if (plane.GetComponent<Map>().mapListL1[count].name.Contains("City Centre") || plane.GetComponent<Map>().mapListL1[count].name.Contains("House") || plane.GetComponent<Map>().mapListL1[count].name.Contains("Library") || plane.GetComponent<Map>().mapListL1[count].name.Contains("Factory") || plane.GetComponent<Map>().mapListL1[count].name.Contains("Wonder") || plane.GetComponent<Map>().mapListL1[count].name.Contains("TowerM") || plane.GetComponent<Map>().mapListL1[count].name.Contains("TowerAA") || plane.GetComponent<Map>().mapListL1[count].name.Contains("Farm") || plane.GetComponent<Map>().mapListL1[count].name.Contains("Forest") || plane.GetComponent<Map>().mapListL1[count].name.Contains("Road") || plane.GetComponent<Map>().mapListL1[count].name.Contains("Blockade")) //if node is Grassland THEN
+         //hit.collider.gameObject.name.Contains("City Centre") || hit.collider.gameObject.name.Contains("Road") || hit.collider.gameObject.name.Contains("Blockade") || hit.collider.gameObject.name.Contains("Forest") || hit.collider.gameObject.name.Contains("Wonder") || hit.collider.gameObject.name.Contains("Tower") || hit.collider.gameObject.name.Contains("TowerAA") || hit.collider.gameObject.name.Contains("Library") || hit.collider.gameObject.name.Contains("Factory") || hit.collider.gameObject.name.Contains("House") || hit.collider.gameObject.name.Contains("Farm")
+         if (plane.GetComponent<Map>().mapListL1[count].name.Contains("City Centre") || plane.GetComponent<Map>().mapListL1[count].name.Contains("House") || plane.GetComponent<Map>().mapListL1[count].name.Contains("Library") || plane.GetComponent<Map>().mapListL1[count].name.Contains("Factory") || plane.GetComponent<Map>().mapListL1[count].name.Contains("Wonder") || plane.GetComponent<Map>().mapListL1[count].name.Contains("Tower") || plane.GetComponent<Map>().mapListL1[count].name.Contains("TowerAA") || plane.GetComponent<Map>().mapListL1[count].name.Contains("Farm") || plane.GetComponent<Map>().mapListL1[count].name.Contains("Forest") || plane.GetComponent<Map>().mapListL1[count].name.Contains("Road") || plane.GetComponent<Map>().mapListL1[count].name.Contains("Blockade")) //if node is Grassland THEN
          {
              Debug.Log("box2 is TOP LEFT of box1");
              Debug.Log(count);
@@ -1202,7 +1202,7 @@ if (tempZ < tempZ2)//top left
 else if (tempZ == tempZ2)//middle left
 {
  float y = 0f;
- //iterate through all selected nodes until all node positions are processed
+ //iterate through all selected nodeArray until all node positions are processed
  for (float x = tempX; x >= tempX2; x -= 3f)
  {
      //process position variables
@@ -1243,7 +1243,7 @@ else if (tempZ == tempZ2)//middle left
  int countY2 = int.Parse(stringCountY2);
 
 
- //using these fetched variables, iterate through each node within selection and build on appropriate nodes
+ //using these fetched variables, iterate through each node within selection and build on appropriate nodeArray
  Debug.Log("reached here");
 
  Debug.Log(listX[0]);
@@ -1263,7 +1263,7 @@ else if (tempZ == tempZ2)//middle left
      // string processed2Y1 = processed1Y1.Substring();
      count = (60 * countY2 - (60 - j));//using x,y position calculate the position of the node within mapListL1 in plane objectss
      count -= 1;
-     if (plane.GetComponent<Map>().mapListL1[count].name.Contains("City Centre") || plane.GetComponent<Map>().mapListL1[count].name.Contains("House") || plane.GetComponent<Map>().mapListL1[count].name.Contains("Library") || plane.GetComponent<Map>().mapListL1[count].name.Contains("Factory") || plane.GetComponent<Map>().mapListL1[count].name.Contains("Wonder") || plane.GetComponent<Map>().mapListL1[count].name.Contains("TowerM") || plane.GetComponent<Map>().mapListL1[count].name.Contains("TowerAA") || plane.GetComponent<Map>().mapListL1[count].name.Contains("Farm") || plane.GetComponent<Map>().mapListL1[count].name.Contains("Forest") || plane.GetComponent<Map>().mapListL1[count].name.Contains("Road") || plane.GetComponent<Map>().mapListL1[count].name.Contains("Blockade")) //if node is Grassland THEN
+     if (plane.GetComponent<Map>().mapListL1[count].name.Contains("City Centre") || plane.GetComponent<Map>().mapListL1[count].name.Contains("House") || plane.GetComponent<Map>().mapListL1[count].name.Contains("Library") || plane.GetComponent<Map>().mapListL1[count].name.Contains("Factory") || plane.GetComponent<Map>().mapListL1[count].name.Contains("Wonder") || plane.GetComponent<Map>().mapListL1[count].name.Contains("Tower") || plane.GetComponent<Map>().mapListL1[count].name.Contains("TowerAA") || plane.GetComponent<Map>().mapListL1[count].name.Contains("Farm") || plane.GetComponent<Map>().mapListL1[count].name.Contains("Forest") || plane.GetComponent<Map>().mapListL1[count].name.Contains("Road") || plane.GetComponent<Map>().mapListL1[count].name.Contains("Blockade")) //if node is Grassland THEN
      {
          buildingKeeper.UpdateSelectedCell(plane.GetComponent<Map>().mapListL1[count]);
 
@@ -1284,7 +1284,7 @@ else if (tempZ == tempZ2)//middle left
 }
 else if (tempZ > tempZ2)//bottom left
 {
- //iterate through all selected nodes until all node positions are processed
+ //iterate through all selected nodeArray until all node positions are processed
  for (float x = tempX; x >= tempX2; x -= 3f)
  {
      for (float y = tempZ; y >= tempZ2; y -= 3f)
@@ -1326,7 +1326,7 @@ else if (tempZ > tempZ2)//bottom left
  int countY2 = int.Parse(stringCountY2);
 
 
- //using these fetched variables, iterate through each node within selection and build on appropriate nodes
+ //using these fetched variables, iterate through each node within selection and build on appropriate nodeArray
  Debug.Log("reached here");
 
  Debug.Log(listX[0]);
@@ -1343,7 +1343,7 @@ else if (tempZ > tempZ2)//bottom left
      {
          count = (60 * i - (60 - j));//using x,y position calculate the position of the node within mapListL1 in plane object
          count -= 1;
-         if (plane.GetComponent<Map>().mapListL1[count].name.Contains("City Centre") || plane.GetComponent<Map>().mapListL1[count].name.Contains("House") || plane.GetComponent<Map>().mapListL1[count].name.Contains("Library") || plane.GetComponent<Map>().mapListL1[count].name.Contains("Factory") || plane.GetComponent<Map>().mapListL1[count].name.Contains("Wonder") || plane.GetComponent<Map>().mapListL1[count].name.Contains("TowerM") || plane.GetComponent<Map>().mapListL1[count].name.Contains("TowerAA") || plane.GetComponent<Map>().mapListL1[count].name.Contains("Farm") || plane.GetComponent<Map>().mapListL1[count].name.Contains("Forest") || plane.GetComponent<Map>().mapListL1[count].name.Contains("Road") || plane.GetComponent<Map>().mapListL1[count].name.Contains("Blockade")) //if node is Grassland THEN
+         if (plane.GetComponent<Map>().mapListL1[count].name.Contains("City Centre") || plane.GetComponent<Map>().mapListL1[count].name.Contains("House") || plane.GetComponent<Map>().mapListL1[count].name.Contains("Library") || plane.GetComponent<Map>().mapListL1[count].name.Contains("Factory") || plane.GetComponent<Map>().mapListL1[count].name.Contains("Wonder") || plane.GetComponent<Map>().mapListL1[count].name.Contains("Tower") || plane.GetComponent<Map>().mapListL1[count].name.Contains("TowerAA") || plane.GetComponent<Map>().mapListL1[count].name.Contains("Farm") || plane.GetComponent<Map>().mapListL1[count].name.Contains("Forest") || plane.GetComponent<Map>().mapListL1[count].name.Contains("Road") || plane.GetComponent<Map>().mapListL1[count].name.Contains("Blockade")) //if node is Grassland THEN
          {
              buildingKeeper.UpdateSelectedCell(plane.GetComponent<Map>().mapListL1[count]);
 
@@ -1366,7 +1366,7 @@ else if (tempX < tempX2)//box2x is to the right of box1x
 {
 if (tempZ < tempZ2)//top right
 {
- //iterate through all selected nodes until all node positions are processed
+ //iterate through all selected nodeArray until all node positions are processed
  for (float x = tempX; x <= tempX2; x += 3f)
  {
      for (float y = tempZ; y <= tempZ2; y += 3f)
@@ -1408,7 +1408,7 @@ if (tempZ < tempZ2)//top right
  int countY2 = int.Parse(stringCountY2);
 
 
- //using these fetched variables, iterate through each node within selection and build on appropriate nodes
+ //using these fetched variables, iterate through each node within selection and build on appropriate nodeArray
  Debug.Log("reached here");
 
  Debug.Log(listX[0]);
@@ -1425,7 +1425,7 @@ if (tempZ < tempZ2)//top right
      {
          count = (60 * i - (60 - j));//using x,y position calculate the position of the node within mapListL1 in plane object
          count -= 1;
-         if (plane.GetComponent<Map>().mapListL1[count].name.Contains("City Centre") || plane.GetComponent<Map>().mapListL1[count].name.Contains("House") || plane.GetComponent<Map>().mapListL1[count].name.Contains("Library") || plane.GetComponent<Map>().mapListL1[count].name.Contains("Factory") || plane.GetComponent<Map>().mapListL1[count].name.Contains("Wonder") || plane.GetComponent<Map>().mapListL1[count].name.Contains("TowerM") || plane.GetComponent<Map>().mapListL1[count].name.Contains("TowerAA") || plane.GetComponent<Map>().mapListL1[count].name.Contains("Farm") || plane.GetComponent<Map>().mapListL1[count].name.Contains("Forest") || plane.GetComponent<Map>().mapListL1[count].name.Contains("Road") || plane.GetComponent<Map>().mapListL1[count].name.Contains("Blockade")) //if node is Grassland THEN
+         if (plane.GetComponent<Map>().mapListL1[count].name.Contains("City Centre") || plane.GetComponent<Map>().mapListL1[count].name.Contains("House") || plane.GetComponent<Map>().mapListL1[count].name.Contains("Library") || plane.GetComponent<Map>().mapListL1[count].name.Contains("Factory") || plane.GetComponent<Map>().mapListL1[count].name.Contains("Wonder") || plane.GetComponent<Map>().mapListL1[count].name.Contains("Tower") || plane.GetComponent<Map>().mapListL1[count].name.Contains("TowerAA") || plane.GetComponent<Map>().mapListL1[count].name.Contains("Farm") || plane.GetComponent<Map>().mapListL1[count].name.Contains("Forest") || plane.GetComponent<Map>().mapListL1[count].name.Contains("Road") || plane.GetComponent<Map>().mapListL1[count].name.Contains("Blockade")) //if node is Grassland THEN
          {
              buildingKeeper.UpdateSelectedCell(plane.GetComponent<Map>().mapListL1[count]);
 
@@ -1445,7 +1445,7 @@ if (tempZ < tempZ2)//top right
 }
 else if (tempZ > tempZ2)//bottom right
 {
- //iterate through all selected nodes until all node positions are processed
+ //iterate through all selected nodeArray until all node positions are processed
  for (float x = tempX; x <= tempX2; x += 3f)
  {
      for (float y = tempZ; y >= tempZ2; y -= 3f)
@@ -1487,7 +1487,7 @@ else if (tempZ > tempZ2)//bottom right
  int countY2 = int.Parse(stringCountY2);
 
 
- //using these fetched variables, iterate through each node within selection and build on appropriate nodes
+ //using these fetched variables, iterate through each node within selection and build on appropriate nodeArray
  Debug.Log("reached here");
 
  Debug.Log(listX[0]);
@@ -1504,7 +1504,7 @@ else if (tempZ > tempZ2)//bottom right
      {
          count = (60 * i - (60 - j));//using x,y position calculate the position of the node within mapListL1 in plane object
          count -= 1;
-         if (plane.GetComponent<Map>().mapListL1[count].name.Contains("City Centre") || plane.GetComponent<Map>().mapListL1[count].name.Contains("House") || plane.GetComponent<Map>().mapListL1[count].name.Contains("Library") || plane.GetComponent<Map>().mapListL1[count].name.Contains("Factory") || plane.GetComponent<Map>().mapListL1[count].name.Contains("Wonder") || plane.GetComponent<Map>().mapListL1[count].name.Contains("TowerM") || plane.GetComponent<Map>().mapListL1[count].name.Contains("TowerAA") || plane.GetComponent<Map>().mapListL1[count].name.Contains("Farm") || plane.GetComponent<Map>().mapListL1[count].name.Contains("Forest") || plane.GetComponent<Map>().mapListL1[count].name.Contains("Road") || plane.GetComponent<Map>().mapListL1[count].name.Contains("Blockade")) //if node is Grassland THEN
+         if (plane.GetComponent<Map>().mapListL1[count].name.Contains("City Centre") || plane.GetComponent<Map>().mapListL1[count].name.Contains("House") || plane.GetComponent<Map>().mapListL1[count].name.Contains("Library") || plane.GetComponent<Map>().mapListL1[count].name.Contains("Factory") || plane.GetComponent<Map>().mapListL1[count].name.Contains("Wonder") || plane.GetComponent<Map>().mapListL1[count].name.Contains("Tower") || plane.GetComponent<Map>().mapListL1[count].name.Contains("TowerAA") || plane.GetComponent<Map>().mapListL1[count].name.Contains("Farm") || plane.GetComponent<Map>().mapListL1[count].name.Contains("Forest") || plane.GetComponent<Map>().mapListL1[count].name.Contains("Road") || plane.GetComponent<Map>().mapListL1[count].name.Contains("Blockade")) //if node is Grassland THEN
          {
              buildingKeeper.UpdateSelectedCell(plane.GetComponent<Map>().mapListL1[count]);
 
@@ -1525,7 +1525,7 @@ else if (tempZ > tempZ2)//bottom right
 else if (tempZ == tempZ2)//middle right
 {
  float y = 0f;
- //iterate through all selected nodes until all node positions are processed
+ //iterate through all selected nodeArray until all node positions are processed
  for (float x = tempX; x <= tempX2; x += 3f)
  {
      //process position variables
@@ -1566,7 +1566,7 @@ else if (tempZ == tempZ2)//middle right
  int countY2 = int.Parse(stringCountY2);
 
 
- //using these fetched variables, iterate through each node within selection and build on appropriate nodes
+ //using these fetched variables, iterate through each node within selection and build on appropriate nodeArray
  Debug.Log("reached here");
 
  Debug.Log(listX[0]);
@@ -1586,7 +1586,7 @@ else if (tempZ == tempZ2)//middle right
      // string processed2Y1 = processed1Y1.Substring();
      count = (60 * countY2 - (60 - j));//using x,y position calculate the position of the node within mapListL1 in plane objectss
      count -= 1;
-     if (plane.GetComponent<Map>().mapListL1[count].name.Contains("City Centre") || plane.GetComponent<Map>().mapListL1[count].name.Contains("House") || plane.GetComponent<Map>().mapListL1[count].name.Contains("Library") || plane.GetComponent<Map>().mapListL1[count].name.Contains("Factory") || plane.GetComponent<Map>().mapListL1[count].name.Contains("Wonder") || plane.GetComponent<Map>().mapListL1[count].name.Contains("TowerM") || plane.GetComponent<Map>().mapListL1[count].name.Contains("TowerAA") || plane.GetComponent<Map>().mapListL1[count].name.Contains("Farm") || plane.GetComponent<Map>().mapListL1[count].name.Contains("Forest") || plane.GetComponent<Map>().mapListL1[count].name.Contains("Road") || plane.GetComponent<Map>().mapListL1[count].name.Contains("Blockade")) //if node is Grassland THEN
+     if (plane.GetComponent<Map>().mapListL1[count].name.Contains("City Centre") || plane.GetComponent<Map>().mapListL1[count].name.Contains("House") || plane.GetComponent<Map>().mapListL1[count].name.Contains("Library") || plane.GetComponent<Map>().mapListL1[count].name.Contains("Factory") || plane.GetComponent<Map>().mapListL1[count].name.Contains("Wonder") || plane.GetComponent<Map>().mapListL1[count].name.Contains("Tower") || plane.GetComponent<Map>().mapListL1[count].name.Contains("TowerAA") || plane.GetComponent<Map>().mapListL1[count].name.Contains("Farm") || plane.GetComponent<Map>().mapListL1[count].name.Contains("Forest") || plane.GetComponent<Map>().mapListL1[count].name.Contains("Road") || plane.GetComponent<Map>().mapListL1[count].name.Contains("Blockade")) //if node is Grassland THEN
      {
          buildingKeeper.UpdateSelectedCell(plane.GetComponent<Map>().mapListL1[count]);
 
@@ -1609,7 +1609,7 @@ else if (tempX == tempX2)//box2x is on the same row as box1x
 {
 if (tempZ < tempZ2)//top middle
 {
- //iterate through all selected nodes until all node positions are processed
+ //iterate through all selected nodeArray until all node positions are processed
  float x = 0f;
  for (float y = tempZ; y <= tempZ2; y += 3f)
  {
@@ -1651,7 +1651,7 @@ if (tempZ < tempZ2)//top middle
  int countY2 = int.Parse(stringCountY2);
 
 
- //using these fetched variables, iterate through each node within selection and build on appropriate nodes
+ //using these fetched variables, iterate through each node within selection and build on appropriate nodeArray
  Debug.Log("reached here");
 
  Debug.Log(listX[0]);
@@ -1667,7 +1667,7 @@ if (tempZ < tempZ2)//top middle
  {
      count = (60 * i - (60 - countX2));//using x,y position calculate the position of the node within mapListL1 in plane object
      count -= 1;
-     if (plane.GetComponent<Map>().mapListL1[count].name.Contains("City Centre") || plane.GetComponent<Map>().mapListL1[count].name.Contains("House") || plane.GetComponent<Map>().mapListL1[count].name.Contains("Library") || plane.GetComponent<Map>().mapListL1[count].name.Contains("Factory") || plane.GetComponent<Map>().mapListL1[count].name.Contains("Wonder") || plane.GetComponent<Map>().mapListL1[count].name.Contains("TowerM") || plane.GetComponent<Map>().mapListL1[count].name.Contains("TowerAA") || plane.GetComponent<Map>().mapListL1[count].name.Contains("Farm") || plane.GetComponent<Map>().mapListL1[count].name.Contains("Forest") || plane.GetComponent<Map>().mapListL1[count].name.Contains("Road") || plane.GetComponent<Map>().mapListL1[count].name.Contains("Blockade")) //if node is Grassland THEN
+     if (plane.GetComponent<Map>().mapListL1[count].name.Contains("City Centre") || plane.GetComponent<Map>().mapListL1[count].name.Contains("House") || plane.GetComponent<Map>().mapListL1[count].name.Contains("Library") || plane.GetComponent<Map>().mapListL1[count].name.Contains("Factory") || plane.GetComponent<Map>().mapListL1[count].name.Contains("Wonder") || plane.GetComponent<Map>().mapListL1[count].name.Contains("Tower") || plane.GetComponent<Map>().mapListL1[count].name.Contains("TowerAA") || plane.GetComponent<Map>().mapListL1[count].name.Contains("Farm") || plane.GetComponent<Map>().mapListL1[count].name.Contains("Forest") || plane.GetComponent<Map>().mapListL1[count].name.Contains("Road") || plane.GetComponent<Map>().mapListL1[count].name.Contains("Blockade")) //if node is Grassland THEN
      {
          buildingKeeper.UpdateSelectedCell(plane.GetComponent<Map>().mapListL1[count]);
 
@@ -1687,7 +1687,7 @@ if (tempZ < tempZ2)//top middle
 }
 else if (tempZ > tempZ2)//bottom middle
 {
- //iterate through all selected nodes until all node positions are processed
+ //iterate through all selected nodeArray until all node positions are processed
  for (float y = tempZ; y >= tempZ2; y -= 3f)
  {
      float x = tempX;
@@ -1728,7 +1728,7 @@ else if (tempZ > tempZ2)//bottom middle
  int countY2 = int.Parse(stringCountY2);
 
 
- //using these fetched variables, iterate through each node within selection and build on appropriate nodes
+ //using these fetched variables, iterate through each node within selection and build on appropriate nodeArray
  Debug.Log("reached here");
 
  Debug.Log(listX[0]);
@@ -1743,7 +1743,7 @@ else if (tempZ > tempZ2)//bottom middle
  {
      count = (60 * i - (60 - countX2));//using x,y position calculate the position of the node within mapListL1 in plane object
      count -= 1;
-     if (plane.GetComponent<Map>().mapListL1[count].name.Contains("City Centre") || plane.GetComponent<Map>().mapListL1[count].name.Contains("House") || plane.GetComponent<Map>().mapListL1[count].name.Contains("Library") || plane.GetComponent<Map>().mapListL1[count].name.Contains("Factory") || plane.GetComponent<Map>().mapListL1[count].name.Contains("Wonder") || plane.GetComponent<Map>().mapListL1[count].name.Contains("TowerM") || plane.GetComponent<Map>().mapListL1[count].name.Contains("TowerAA") || plane.GetComponent<Map>().mapListL1[count].name.Contains("Farm") || plane.GetComponent<Map>().mapListL1[count].name.Contains("Forest") || plane.GetComponent<Map>().mapListL1[count].name.Contains("Road") || plane.GetComponent<Map>().mapListL1[count].name.Contains("Blockade")) //if node is Grassland THEN
+     if (plane.GetComponent<Map>().mapListL1[count].name.Contains("City Centre") || plane.GetComponent<Map>().mapListL1[count].name.Contains("House") || plane.GetComponent<Map>().mapListL1[count].name.Contains("Library") || plane.GetComponent<Map>().mapListL1[count].name.Contains("Factory") || plane.GetComponent<Map>().mapListL1[count].name.Contains("Wonder") || plane.GetComponent<Map>().mapListL1[count].name.Contains("Tower") || plane.GetComponent<Map>().mapListL1[count].name.Contains("TowerAA") || plane.GetComponent<Map>().mapListL1[count].name.Contains("Farm") || plane.GetComponent<Map>().mapListL1[count].name.Contains("Forest") || plane.GetComponent<Map>().mapListL1[count].name.Contains("Road") || plane.GetComponent<Map>().mapListL1[count].name.Contains("Blockade")) //if node is Grassland THEN
      {
          buildingKeeper.UpdateSelectedCell(plane.GetComponent<Map>().mapListL1[count]);//ss
 
@@ -1764,7 +1764,7 @@ else if (tempZ > tempZ2)//bottom middle
 else if (tempZ == tempZ2)//middle middle
 {
 
- //iterate through all selected nodes until all node positions are processed
+ //iterate through all selected nodeArray until all node positions are processed
 
  //process position variables
  float x = tempX;
@@ -1805,7 +1805,7 @@ else if (tempZ == tempZ2)//middle middle
  int countY2 = int.Parse(stringCountY2);
 
 
- //using these fetched variables, iterate through each node within selection and build on appropriate nodes
+ //using these fetched variables, iterate through each node within selection and build on appropriate nodeArray
  Debug.Log("reached here");
 
  Debug.Log(listX[0]);
@@ -1819,7 +1819,7 @@ else if (tempZ == tempZ2)//middle middle
  index = (60 * countY2 - (60 - countX2));//using x,y position calculate the position of the node within mapListL1 in plane object
  index -= 1;
  Debug.Log(index);
- if (plane.GetComponent<Map>().mapListL1[index].name.Contains("City Centre") || plane.GetComponent<Map>().mapListL1[index].name.Contains("House") || plane.GetComponent<Map>().mapListL1[index].name.Contains("Library") || plane.GetComponent<Map>().mapListL1[index].name.Contains("Factory") || plane.GetComponent<Map>().mapListL1[index].name.Contains("Wonder") || plane.GetComponent<Map>().mapListL1[index].name.Contains("TowerM") || plane.GetComponent<Map>().mapListL1[index].name.Contains("TowerAA") || plane.GetComponent<Map>().mapListL1[index].name.Contains("Farm") || plane.GetComponent<Map>().mapListL1[index].name.Contains("Forest") || plane.GetComponent<Map>().mapListL1[index].name.Contains("Road") || plane.GetComponent<Map>().mapListL1[index].name.Contains("Blockade")) //if node is Grassland THEN
+ if (plane.GetComponent<Map>().mapListL1[index].name.Contains("City Centre") || plane.GetComponent<Map>().mapListL1[index].name.Contains("House") || plane.GetComponent<Map>().mapListL1[index].name.Contains("Library") || plane.GetComponent<Map>().mapListL1[index].name.Contains("Factory") || plane.GetComponent<Map>().mapListL1[index].name.Contains("Wonder") || plane.GetComponent<Map>().mapListL1[index].name.Contains("Tower") || plane.GetComponent<Map>().mapListL1[index].name.Contains("TowerAA") || plane.GetComponent<Map>().mapListL1[index].name.Contains("Farm") || plane.GetComponent<Map>().mapListL1[index].name.Contains("Forest") || plane.GetComponent<Map>().mapListL1[index].name.Contains("Road") || plane.GetComponent<Map>().mapListL1[index].name.Contains("Blockade")) //if node is Grassland THEN
  {
 
      Debug.Log(plane.GetComponent<Map>().mapListL1[index]);
@@ -1850,7 +1850,7 @@ else if (tempZ == tempZ2)//middle middle
 
 
 
-     /* //iterate through all selected nodes until all node positions are processed
+     /* //iterate through all selected nodeArray until all node positions are processed
 
       //process position variables
 
@@ -1890,7 +1890,7 @@ else if (tempZ == tempZ2)//middle middle
       int countY2 = int.Parse(stringCountY2);
 
 
-      //using these fetched variables, iterate through each node within selection and build on appropriate nodes
+      //using these fetched variables, iterate through each node within selection and build on appropriate nodeArray
       Debug.Log("reached here");
 
       Debug.Log(listX[0]);
@@ -1917,7 +1917,7 @@ else if (tempZ == tempZ2)//middle middle
       Debug.Log(zParse);
 
 
-      if (plane.GetComponent<Map>().mapListL1[index].name.Contains("City Centre") || plane.GetComponent<Map>().mapListL1[index].name.Contains("House") || plane.GetComponent<Map>().mapListL1[index].name.Contains("Library") || plane.GetComponent<Map>().mapListL1[index].name.Contains("Factory") || plane.GetComponent<Map>().mapListL1[index].name.Contains("Wonder") || plane.GetComponent<Map>().mapListL1[index].name.Contains("TowerM") || plane.GetComponent<Map>().mapListL1[index].name.Contains("TowerAA") || plane.GetComponent<Map>().mapListL1[index].name.Contains("Farm") || plane.GetComponent<Map>().mapListL1[index].name.Contains("Forest") || plane.GetComponent<Map>().mapListL1[index].name.Contains("Road") || plane.GetComponent<Map>().mapListL1[index].name.Contains("Blockade")) //if node is Grassland THEN
+      if (plane.GetComponent<Map>().mapListL1[index].name.Contains("City Centre") || plane.GetComponent<Map>().mapListL1[index].name.Contains("House") || plane.GetComponent<Map>().mapListL1[index].name.Contains("Library") || plane.GetComponent<Map>().mapListL1[index].name.Contains("Factory") || plane.GetComponent<Map>().mapListL1[index].name.Contains("Wonder") || plane.GetComponent<Map>().mapListL1[index].name.Contains("Tower") || plane.GetComponent<Map>().mapListL1[index].name.Contains("TowerAA") || plane.GetComponent<Map>().mapListL1[index].name.Contains("Farm") || plane.GetComponent<Map>().mapListL1[index].name.Contains("Forest") || plane.GetComponent<Map>().mapListL1[index].name.Contains("Road") || plane.GetComponent<Map>().mapListL1[index].name.Contains("Blockade")) //if node is Grassland THEN
       {
           Debug.Log("DEBUG1");
           /*
@@ -2006,7 +2006,7 @@ Destroy(buildingKeeper.SelectedCell);
                   {
                       string tempString = hit.collider.name;
                       Debug.Log(tempString);
-                      if (hit.collider.name.Contains("Road") || hit.collider.name.Contains("Blockade") || hit.collider.name.Contains("City Centre") || hit.collider.name.Contains("House") || hit.collider.name.Contains("Library") || hit.collider.name.Contains("Factory") || hit.collider.name.Contains("Wonder") || hit.collider.name.Contains("Forest") || hit.collider.name.Contains("TowerAA") || hit.collider.name.Contains("TowerM") || hit.collider.name.Contains("Farm"))
+                      if (hit.collider.name.Contains("Road") || hit.collider.name.Contains("Blockade") || hit.collider.name.Contains("City Centre") || hit.collider.name.Contains("House") || hit.collider.name.Contains("Library") || hit.collider.name.Contains("Factory") || hit.collider.name.Contains("Wonder") || hit.collider.name.Contains("Forest") || hit.collider.name.Contains("TowerAA") || hit.collider.name.Contains("Tower") || hit.collider.name.Contains("Farm"))
                       {
                           int iiiii = 0;
                           buildingKeeper.UpdateSelectedCell(hit.collider.gameObject);
@@ -2062,7 +2062,7 @@ Destroy(buildingKeeper.SelectedCell);
         farm = (GameObject)Resources.Load(@"Buildings/Farm", typeof(GameObject));
         grassland = (GameObject)Resources.Load(@"Buildings/Grassland", typeof(GameObject));
         towerAA = (GameObject)Resources.Load(@"Buildings/TowerAA", typeof(GameObject));
-        towerM = (GameObject)Resources.Load(@"Buildings/TowerM", typeof(GameObject));
+        towerM = (GameObject)Resources.Load(@"Buildings/Tower", typeof(GameObject));
         road = (GameObject)Resources.Load(@"Buildings/Road", typeof(GameObject));
         blockade = (GameObject)Resources.Load(@"Buildings/Blockade", typeof(GameObject));
         forest = (GameObject)Resources.Load(@"Buildings/Forest", typeof(GameObject));

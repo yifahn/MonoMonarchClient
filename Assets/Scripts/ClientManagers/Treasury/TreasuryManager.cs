@@ -191,7 +191,7 @@ namespace Assets.Scripts.ClientManagers.Treasury
             //            totalCost += (int)NodeCostEnum.Blockade * nodeTypesTotalArray[i];
             //            break;
             //        case 7: // mtower
-            //            totalCost += (int)NodeCostEnum.MTower * nodeTypesTotalArray[i];
+            //            totalCost += (int)NodeCostEnum.Tower * nodeTypesTotalArray[i];
             //            break;
             //        case 8: // wonder
             //            totalCost += (int)NodeCostEnum.Wonder * nodeTypesTotalArray[i];

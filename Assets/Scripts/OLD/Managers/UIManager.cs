@@ -64,7 +64,7 @@ namespace Managers
                    else if (gameObjectName.Contains("HouseBtn")) { BuilderHelper.SelectedBuildingState = SelectedBuilding.House; }
                    else if (gameObjectName.Contains("LibraryBtn")) { BuilderHelper.SelectedBuildingState = SelectedBuilding.Library; }
                    else if (gameObjectName.Contains("FactoryBtn")) { BuilderHelper.SelectedBuildingState = SelectedBuilding.Factory; }
-                   else if (gameObjectName.Contains("MTowerBtn")) { BuilderHelper.SelectedBuildingState = SelectedBuilding.MTower; }
+                   else if (gameObjectName.Contains("MTowerBtn")) { BuilderHelper.SelectedBuildingState = SelectedBuilding.Tower; }
                    else if (gameObjectName.Contains("WonderBtn")) { BuilderHelper.SelectedBuildingState = SelectedBuilding.Wonder; }
                    else if (gameObjectName.Contains("RoadBtn")) { BuilderHelper.SelectedBuildingState = SelectedBuilding.Road; }
                    else if (gameObjectName.Contains("BlockadeBtn")) { BuilderHelper.SelectedBuildingState = SelectedBuilding.Blockade; }

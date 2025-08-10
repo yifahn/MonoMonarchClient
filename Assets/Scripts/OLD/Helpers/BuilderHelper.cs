@@ -160,7 +160,7 @@ namespace Helpers
                 case 1: // recording first node
                     AltState = AltState.FirstSelected;
                     break;
-                case 2: // recorded both nodes, set to false on confirmation
+                case 2: // recorded both nodeArray, set to false on confirmation
                     AltState = AltState.SecondSelected;
                     break;
                 case 3: //after confirmation of second node, set to false

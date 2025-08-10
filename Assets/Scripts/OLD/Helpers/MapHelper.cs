@@ -107,7 +107,7 @@ namespace Helpers
 
 
         /// <summary>
-        /// Provide n_Id of two nodes, returns array of n_Id within the bounds of n1 and n2 as rectangle
+        /// Provide n_Id of two nodeArray, returns array of n_Id within the bounds of n1 and n2 as rectangle
         /// </summary>
         public static int[] PopulateNodeArray(int n_1, int n_2)
         {
@@ -215,7 +215,7 @@ namespace Helpers
                 case 3:
                     return "Factory";
                 case 4:
-                    return "MTower";
+                    return "Tower";
                 case 5:
                     return "Road";
                 case 6:

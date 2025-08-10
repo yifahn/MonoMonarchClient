@@ -26,7 +26,7 @@ public class Replace : MonoBehaviour
         road = panel.GetComponent<Building>().buildingKeeper.Road;
         blockade = panel.GetComponent<Building>().buildingKeeper.Blockade;
         towerAA = panel.GetComponent<Building>().buildingKeeper.TowerAA;
-        towerM = panel.GetComponent<Building>().buildingKeeper.TowerM;
+        towerM = panel.GetComponent<Building>().buildingKeeper.Tower;
         farm = panel.GetComponent<Building>().buildingKeeper.Farm;//sss*/
     }
     public void callRemove(string buildingName)//ss
@@ -85,11 +85,11 @@ public class Replace : MonoBehaviour
             plane.GetComponent<Map>().EditCellList(panel.GetComponent<Building>().buildingKeeper.Grassland, panel.GetComponent<Building>().buildingKeeper.SelectedCell.transform.position.x, panel.GetComponent<Building>().buildingKeeper.SelectedCell.transform.position.z);
             score.GetComponent<Score>().RemoveUpdate(panel.GetComponent<Building>().buildingKeeper.Blockade.name);
         }
-        else if (buildingName.Contains("TowerM"))
+        else if (buildingName.Contains("Tower"))
         {
             Instantiate(panel.GetComponent<Building>().buildingKeeper.Grassland, new Vector3(panel.GetComponent<Building>().buildingKeeper.SelectedCell.transform.position.x, 0, panel.GetComponent<Building>().buildingKeeper.SelectedCell.transform.position.z), Quaternion.identity);
             plane.GetComponent<Map>().EditCellList(panel.GetComponent<Building>().buildingKeeper.Grassland, panel.GetComponent<Building>().buildingKeeper.SelectedCell.transform.position.x, panel.GetComponent<Building>().buildingKeeper.SelectedCell.transform.position.z);
-            score.GetComponent<Score>().RemoveUpdate(panel.GetComponent<Building>().buildingKeeper.TowerM.name);
+            score.GetComponent<Score>().RemoveUpdate(panel.GetComponent<Building>().buildingKeeper.Tower.name);
         }
         else if (buildingName.Contains("TowerAA"))
         {
@@ -176,21 +176,21 @@ public class Replace : MonoBehaviour
                 case "mtower":
                     if (SaveAndLoad.isReadyPlay == false)//ss panel.GetComponent<Building>().buildingKeeper.
                     {
-                        Instantiate(panel.GetComponent<Building>().buildingKeeper.TowerM, new Vector3(panel.GetComponent<Building>().buildingKeeper.SelectedCell.transform.position.x, buildingHeight, panel.GetComponent<Building>().buildingKeeper.SelectedCell.transform.position.z), Quaternion.identity);
-                        plane.GetComponent<Map>().EditCellList(panel.GetComponent<Building>().buildingKeeper.TowerM, panel.GetComponent<Building>().buildingKeeper.SelectedCell.transform.position.x, panel.GetComponent<Building>().buildingKeeper.SelectedCell.transform.position.z); //RECENT UPDATE TO ALL LINES LIKE THIS IN THIS SCRIPT
+                        Instantiate(panel.GetComponent<Building>().buildingKeeper.Tower, new Vector3(panel.GetComponent<Building>().buildingKeeper.SelectedCell.transform.position.x, buildingHeight, panel.GetComponent<Building>().buildingKeeper.SelectedCell.transform.position.z), Quaternion.identity);
+                        plane.GetComponent<Map>().EditCellList(panel.GetComponent<Building>().buildingKeeper.Tower, panel.GetComponent<Building>().buildingKeeper.SelectedCell.transform.position.x, panel.GetComponent<Building>().buildingKeeper.SelectedCell.transform.position.z); //RECENT UPDATE TO ALL LINES LIKE THIS IN THIS SCRIPT
                         Destroy(panel.GetComponent<Building>().buildingKeeper.SelectedCell);
                         
-                        //  score.GetComponent<Score>().BuildScoreUpdate(BuildingKeeper.buildingKeeper.TowerM.name);
+                        //  score.GetComponent<Score>().BuildScoreUpdate(BuildingKeeper.buildingKeeper.Tower.name);
                     }
                     if (ScoreState.score >= ScoreState.towerMPrice && SaveAndLoad.isReadyPlay == true)
                     {
                         if (SaveAndLoad.isReadyPlay == true)
                         {
-                            Instantiate(panel.GetComponent<Building>().buildingKeeper.TowerM, new Vector3(panel.GetComponent<Building>().buildingKeeper.SelectedCell.transform.position.x, buildingHeight, panel.GetComponent<Building>().buildingKeeper.SelectedCell.transform.position.z), Quaternion.identity);
-                            plane.GetComponent<Map>().EditCellList(panel.GetComponent<Building>().buildingKeeper.TowerM, panel.GetComponent<Building>().buildingKeeper.SelectedCell.transform.position.x, panel.GetComponent<Building>().buildingKeeper.SelectedCell.transform.position.z);
+                            Instantiate(panel.GetComponent<Building>().buildingKeeper.Tower, new Vector3(panel.GetComponent<Building>().buildingKeeper.SelectedCell.transform.position.x, buildingHeight, panel.GetComponent<Building>().buildingKeeper.SelectedCell.transform.position.z), Quaternion.identity);
+                            plane.GetComponent<Map>().EditCellList(panel.GetComponent<Building>().buildingKeeper.Tower, panel.GetComponent<Building>().buildingKeeper.SelectedCell.transform.position.x, panel.GetComponent<Building>().buildingKeeper.SelectedCell.transform.position.z);
                             Destroy(panel.GetComponent<Building>().buildingKeeper.SelectedCell);
-                            score.GetComponent<Score>().BuildScoreUpdate(panel.GetComponent<Building>().buildingKeeper.TowerM.name);
-                            Debug.Log(panel.GetComponent<Building>().buildingKeeper.TowerM.name + " " + "built");
+                            score.GetComponent<Score>().BuildScoreUpdate(panel.GetComponent<Building>().buildingKeeper.Tower.name);
+                            Debug.Log(panel.GetComponent<Building>().buildingKeeper.Tower.name + " " + "built");
                         }
                         else
                         {

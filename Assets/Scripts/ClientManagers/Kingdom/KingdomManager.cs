@@ -18,14 +18,17 @@ using MonoMonarchNetworkFramework.Game.Kingdom.Map;
 using MonoMonarchNetworkFramework.Game.Soupkitchen;
 using Newtonsoft.Json;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using TestClasses;
+using TMPro;
 using Unity.VisualScripting;
-using UnityEditor.Experimental.GraphView;
+
 using UnityEngine;
+using UnityEngine.UI;
+
 
 
 namespace Assets.Scripts.ClientManagers.Kingdom
@@ -53,7 +56,7 @@ namespace Assets.Scripts.ClientManagers.Kingdom
                     }
                     DontDestroyOnLoad(_instance.gameObject);
                 }
-                Debug.Log("KINGDOMMANAGER SINGLETON HAS AWOKEN #1 - 2");
+                //Debug.Log("KINGDOMMANAGER SINGLETON HAS AWOKEN #1 - 2");
                 return _instance;
             }
         }
@@ -210,12 +213,12 @@ namespace Assets.Scripts.ClientManagers.Kingdom
         #region Map Zoning
         [SerializeField] private Dictionary<int, BaseNode> zonedMapDict; //index , BaseNode
         [SerializeField] private int[] zonedNumNodeTypes = { 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-        [SerializeField] private Color[] nodeColours;
+        [SerializeField] private Material[] nodeMaterials;
         [SerializeField] private bool isZoningMode;
 
         public Dictionary<int, BaseNode> ZonedMapDict { get => zonedMapDict; set => zonedMapDict = value; }
         public int[] ZonedNumNodeTypes { get => zonedNumNodeTypes; set => zonedNumNodeTypes = value; }
-        public Color[] NodeColours { get => nodeColours; set => nodeColours = value; }
+        public Material[] NodeMaterials { get => nodeMaterials; set => nodeMaterials = value; }
         public bool IsZoningMode { get => isZoningMode; set => isZoningMode = value; }
 
         private Dictionary<int, GameObject> flareDict;
@@ -228,39 +231,43 @@ namespace Assets.Scripts.ClientManagers.Kingdom
         public Material FlareMatGreen { get { return flareMatGreen; } set { flareMatGreen = value; } }
         public Material FlareMatOpaque { get { return flareMatOpaque; } set { flareMatOpaque = value; } }
 
-        public void ToggleZoning(bool SetEnable)
+        public void ToggleZoning()
         {
-            if (SetEnable && !IsZoningMode)
-            { 
+            if (!IsZoningMode)
+            {
                 IsZoningMode = true;
 
 
                 //alter node colours to visually describe proposed zoning changes
-                DistinguishZoningNodes(ZonedMapDict.Keys.ToArray());
+                Debug.Log("Accessing DistinguishZoningNodes() 2");
+                DistinguishZoningNodes(ZonedMapDict.Keys.ToArray(),0.75f);
 
                 //set flare colour to opaque green if sufficient coin, else opaque red 
-                Color flareMat = TreasuryManager.IsSufficientCoin(ZonedNumNodeTypes, TreasuryManager.Instance.TreasuryState.GetTotalCoin()) ? FlareMatGreen.GetComponent<Color>() : FlareMatRed.GetComponent<Color>();
+                Color flareMat = TreasuryManager.IsSufficientCoin(ZonedNumNodeTypes, TreasuryManager.Instance.TreasuryState.GetTotalCoin()) ? FlareMatGreen.color : FlareMatRed.color;//FlareMatRed.GetComponent<Color>();
                 foreach (int nodeId in ZonedMapDict.Keys)
                 {
                     if (FlareDict[nodeId].activeSelf == false)
                         FlareDict[nodeId].SetActive(true); //activate flare if not already active
-                    FlareDict[nodeId].GetComponent<MeshRenderer>().material.color = flareMat;
+                 // FlareDict[nodeId].GetComponent<MeshRenderer>().material.color = flareMat;
+                    FlareDict[nodeId].GetComponent<MeshRenderer>().material.color = new Color(flareMat.r, flareMat.g, flareMat.b, flareMat.a);
+
                 }
             }
-            else if (!SetEnable && IsZoningMode)
+            else if (IsZoningMode)
             {
                 IsZoningMode = false;
                 foreach (BaseNode node in ZonedMapDict.Values)
                 {
-                    //reset node colour to Map's origin - inverse of DistinguishZoningNodes
-                    NodeList[Map[node.NodeIndex].NodeType][node.NodeIndex].GetComponent<MeshRenderer>().material.color = nodeColours.ElementAt(node.NodeType);
+                    DistinguishZoningNodes(ZonedMapDict.Keys.ToArray(), 1f);
+                   // //reset node colour to Map's origin - inverse of DistinguishZoningNodes
+                   // NodeList[Map[node.NodeIndex].NodeType][node.NodeIndex].GetComponent<MeshRenderer>().material.color = nodeMaterials.ElementAt(node.NodeType).color;
 
                     //deactivate all flares
                     if (FlareDict[node.NodeIndex].activeSelf == true)
                         FlareDict[node.NodeIndex].SetActive(false);
                 }
             }
-            
+
         }
 
         //Color redOpaque = new Color(FlareMatRed.color.r, FlareMatRed.color.g, FlareMatRed.color.b, 0);
@@ -292,15 +299,29 @@ namespace Assets.Scripts.ClientManagers.Kingdom
             }
         }
 
-        public void DistinguishZoningNodes(int[] nodeIdArray)
+        public void DistinguishZoningNodes(int[] nodeIdArray, float opacity)
         {
+            Debug.Log($"{IsZoningMode} isZoningMode");
             int[] nodeTypeArray = new int[nodeIdArray.Length];
             for (int i = 0; i < nodeIdArray.Length; i++)
             {
-                nodeTypeArray[i] = ZonedMapDict.ElementAt(nodeIdArray[i]).Value.NodeType;
+                //nodeTypeArray[i] = ZonedMapDict.ElementAt(nodeIdArray[i]).Value.NodeType;
+                if (ZonedMapDict.TryGetValue(nodeIdArray[i], out var node))
+                {
+                    nodeTypeArray[i] = node.NodeType;
+                }
             }
-            SetZonedOpacitySelection(nodeIdArray, 0.75f);
-            SetZonedColourSelection(nodeIdArray, nodeTypeArray);
+            SetZonedOpacitySelection(nodeIdArray, opacity);
+            if (!IsZoningMode)
+            {
+                SetZonedColourSelectionOff(nodeIdArray, nodeTypeArray);
+            }
+            else
+            {
+                SetZonedColourSelectionOn(nodeIdArray, nodeTypeArray);
+                
+            }
+            Debug.Log($"{IsZoningMode} isZoningMode");
         }
 
         public void AddNodesZonedMap(List<BaseNode> zonedNodesList)
@@ -356,10 +377,11 @@ namespace Assets.Scripts.ClientManagers.Kingdom
 
                 foreach (BaseNode node in ZonedMapDict.Values)
                 {
-                    NodeList[Map[node.NodeIndex].NodeType][node.NodeIndex].gameObject.GetComponent<MeshRenderer>().material.color = nodeColours.ElementAt(node.NodeType);
+                    NodeList[Map[node.NodeIndex].NodeType][node.NodeIndex].gameObject.GetComponent<MeshRenderer>().material.color = new Color(NodeMaterials[node.NodeType].color.r, NodeMaterials[node.NodeType].color.g,NodeMaterials[node.NodeType].color.b, NodeMaterials[node.NodeType].color.a);
+                    //FlareDict[nodeId].GetComponent<MeshRenderer>().material.color = new Color(flareMat.r, flareMat.g, flareMat.b, flareMat.a);
                     FlareDict[node.NodeIndex].GetComponent<MeshRenderer>().material.color = redOpaque;
                 }
-                
+
                 IsZoningMode = false;
             }
 
@@ -422,7 +444,7 @@ namespace Assets.Scripts.ClientManagers.Kingdom
 
 
         #region Node Pooling Properties
-        private GameObject grassland, townCentre, house, library, factory, road, blockade, mTower, wonder;
+        private GameObject grassland, townCentre, house, library, factory, road, blockade, tower, wonder;
 
         public GameObject Grassland { get { return grassland; } set { grassland = value; } }
         public GameObject TownCentre { get { return townCentre; } set { townCentre = value; } }
@@ -431,7 +453,7 @@ namespace Assets.Scripts.ClientManagers.Kingdom
         public GameObject Factory { get { return factory; } set { factory = value; } }
         public GameObject Road { get { return road; } set { road = value; } }
         public GameObject Blockade { get { return blockade; } set { blockade = value; } }
-        public GameObject MTower { get { return mTower; } set { mTower = value; } }
+        public GameObject Tower { get { return tower; } set { tower = value; } }
         public GameObject Wonder { get { return wonder; } set { wonder = value; } }
 
         private Dictionary<int, GameObject> grasslandDict, townCentreDict, houseDict, libraryDict, factoryDict, wonderDict, mTowerDict, roadDict, blockadeDict;
@@ -443,7 +465,7 @@ namespace Assets.Scripts.ClientManagers.Kingdom
         public Dictionary<int, GameObject> LibraryDict { get { return libraryDict; } set { libraryDict = value; } }
         public Dictionary<int, GameObject> FactoryDict { get { return factoryDict; } set { factoryDict = value; } }
         public Dictionary<int, GameObject> WonderDict { get { return wonderDict; } set { wonderDict = value; } }
-        public Dictionary<int, GameObject> MTowerDict { get { return mTowerDict; } set { mTowerDict = value; } }
+        public Dictionary<int, GameObject> TowerDict { get { return mTowerDict; } set { mTowerDict = value; } }
         public Dictionary<int, GameObject> RoadDict { get { return roadDict; } set { roadDict = value; } }
         public Dictionary<int, GameObject> BlockadeDict { get { return blockadeDict; } set { blockadeDict = value; } }
         public List<Dictionary<int, GameObject>> NodeList { get { return nodeList; } set { nodeList = value; } }
@@ -453,11 +475,11 @@ namespace Assets.Scripts.ClientManagers.Kingdom
         public void InitialiseKingdomMapAssets()
         {
             Grassland = (GameObject)Resources.Load(@"Node/Buildings/Grassland", typeof(GameObject));
-            TownCentre = (GameObject)Resources.Load(@"Node/Buildings/City Centre", typeof(GameObject));
+            TownCentre = (GameObject)Resources.Load(@"Node/Buildings/TownCentre", typeof(GameObject));
             House = (GameObject)Resources.Load(@"Node/Buildings/House", typeof(GameObject));
             Library = (GameObject)Resources.Load(@"Node/Buildings/Library", typeof(GameObject));
             Factory = (GameObject)Resources.Load(@"Node/Buildings/Factory", typeof(GameObject));
-            MTower = (GameObject)Resources.Load(@"Node/Buildings/TowerM", typeof(GameObject));
+            Tower = (GameObject)Resources.Load(@"Node/Buildings/Tower", typeof(GameObject));
             Road = (GameObject)Resources.Load(@"Node/Buildings/Road", typeof(GameObject));
             Blockade = (GameObject)Resources.Load(@"Node/Buildings/Blockade", typeof(GameObject));
             Wonder = (GameObject)Resources.Load(@"Node/Buildings/Wonder", typeof(GameObject));
@@ -480,7 +502,7 @@ namespace Assets.Scripts.ClientManagers.Kingdom
             LibraryDict = new Dictionary<int, GameObject>();
             FactoryDict = new Dictionary<int, GameObject>();
             WonderDict = new Dictionary<int, GameObject>();
-            MTowerDict = new Dictionary<int, GameObject>();
+            TowerDict = new Dictionary<int, GameObject>();
             RoadDict = new Dictionary<int, GameObject>();
             BlockadeDict = new Dictionary<int, GameObject>();
 
@@ -526,14 +548,18 @@ namespace Assets.Scripts.ClientManagers.Kingdom
                             BlockadeDict.Add(j, Instantiate(Blockade, v3, q));
                             break;
                         case 7:
-                            MTowerDict.Add(j, Instantiate(MTower, v3, q));
+                            TowerDict.Add(j, Instantiate(Tower, v3, q));
                             break;
                         case 8:
                             WonderDict.Add(j, Instantiate(Wonder, v3, q));
                             break;
                     }
                     if (i == 0 && j == 0)
+                    {
                         FlareDict = new Dictionary<int, GameObject>();
+                        Debug.Log("Initialising FlareDict");
+                    }
+
                     if (i == 0)
                     {//instantiate flares for each node index
                         FlareDict.Add(j, Instantiate(Flare, new Vector3(xOffset, z + z, -yOffset), Flare.transform.rotation));
@@ -548,23 +574,23 @@ namespace Assets.Scripts.ClientManagers.Kingdom
             }
             NodeList = new List<Dictionary<int, GameObject>>
             {
-                GrasslandDict, TownCentreDict, HouseDict, LibraryDict, FactoryDict, RoadDict, BlockadeDict, MTowerDict, WonderDict
+                GrasslandDict, TownCentreDict, HouseDict, LibraryDict, FactoryDict, RoadDict, BlockadeDict, TowerDict, WonderDict
             };
             foreach (Dictionary<int, GameObject> dict in NodeList)
             {
                 Debug.Log($"{dict[0].name}");
             }
-            NodeColours = new Color[]
+            NodeMaterials = new Material[]
             {
-                GrasslandDict[0].GetComponent<MeshRenderer>().material.color,
-                TownCentreDict[0].GetComponent<MeshRenderer>().material.color,
-                HouseDict[0].GetComponent<MeshRenderer>().material.color,
-                LibraryDict[0].GetComponent<MeshRenderer>().material.color,
-                FactoryDict[0].GetComponent<MeshRenderer>().material.color,
-                MTowerDict[0].GetComponent<MeshRenderer>().material.color,
-                RoadDict[0].GetComponent<MeshRenderer>().material.color,
-                BlockadeDict[0].GetComponent<MeshRenderer>().material.color,
-                WonderDict[0].GetComponent<MeshRenderer>().material.color,
+                GrasslandDict[0].GetComponent<MeshRenderer>().material,
+                TownCentreDict[0].GetComponent<MeshRenderer>().material,
+                HouseDict[0].GetComponent<MeshRenderer>().material,
+                LibraryDict[0].GetComponent<MeshRenderer>().material,
+                FactoryDict[0].GetComponent<MeshRenderer>().material,
+                TowerDict[0].GetComponent<MeshRenderer>().material,
+                RoadDict[0].GetComponent<MeshRenderer>().material,
+                BlockadeDict[0].GetComponent<MeshRenderer>().material,
+                WonderDict[0].GetComponent<MeshRenderer>().material,
             };
             Debug.Log($"Seed Node Pooling Completed");
         }
@@ -574,56 +600,56 @@ namespace Assets.Scripts.ClientManagers.Kingdom
         #region Kingdom Map Tools
         public void SetZonedOpacitySelection(int[] nodeIdArray, float opacity)
         {
-            Color colour = new Color(0f, 0f, 0f, 0f);
+            //Color colour = new Color(0f, 0f, 0f, 0f);
+            Material material = null;
             foreach (int n_Id in nodeIdArray)
             {
                 BaseNode node = Map[n_Id];
                 switch (node.NodeType)
                 {
                     case 0://grassland
-                        colour = NodeList[0][n_Id].gameObject.GetComponent<Color>();
-                        NodeList[0][n_Id].gameObject.GetComponent<MeshRenderer>().material.color = new Color(colour.r, colour.g, colour.b, opacity);
+                        material = NodeList[0][n_Id].gameObject.GetComponent<MeshRenderer>().material;
+                        NodeList[0][n_Id].gameObject.GetComponent<MeshRenderer>().material.color = new Color(material.color.r, material.color.g, material.color.b, opacity);
                         break;
                     case 1://towncentre
-                        colour = NodeList[1][n_Id].gameObject.GetComponent<Color>();
-                        NodeList[1][n_Id].gameObject.GetComponent<MeshRenderer>().material.color = new Color(colour.r, colour.g, colour.b, opacity);
+                        material = NodeList[1][n_Id].gameObject.GetComponent<MeshRenderer>().material;
+                        NodeList[1][n_Id].gameObject.GetComponent<MeshRenderer>().material.color = new Color(material.color.r, material.color.g, material.color.b, opacity);
                         break;
                     case 2://house
-                        colour = NodeList[2][n_Id].gameObject.GetComponent<Color>();
-                        NodeList[2][n_Id].gameObject.GetComponent<MeshRenderer>().material.color = new Color(colour.r, colour.g, colour.b, opacity);
+                        material = NodeList[2][n_Id].gameObject.GetComponent<MeshRenderer>().material;
+                        NodeList[2][n_Id].gameObject.GetComponent<MeshRenderer>().material.color = new Color(material.color.r, material.color.g, material.color.b, opacity);
                         break;
                     case 3://library
-                        colour = NodeList[3][n_Id].gameObject.GetComponent<Color>();
-                        NodeList[3][n_Id].gameObject.GetComponent<MeshRenderer>().material.color = new Color(colour.r, colour.g, colour.b, opacity);
+                        material = NodeList[3][n_Id].gameObject.GetComponent<MeshRenderer>().material;
+                        NodeList[3][n_Id].gameObject.GetComponent<MeshRenderer>().material.color = new Color(material.color.r, material.color.g, material.color.b, opacity);
                         break;
-                    case 4://factory
-                        colour = NodeList[4][n_Id].gameObject.GetComponent<Color>();
-                        NodeList[4][n_Id].gameObject.GetComponent<MeshRenderer>().material.color = new Color(colour.r, colour.g, colour.b, opacity);
+                    case 4://factory                                                               
+                        material = NodeList[4][n_Id].gameObject.GetComponent<MeshRenderer>().material;
+                        NodeList[4][n_Id].gameObject.GetComponent<MeshRenderer>().material.color = new Color(material.color.r, material.color.g, material.color.b, opacity);
                         break;
-                    case 5://road
-                        colour = NodeList[5][n_Id].gameObject.GetComponent<Color>();
-                        NodeList[5][n_Id].gameObject.GetComponent<MeshRenderer>().material.color = new Color(colour.r, colour.g, colour.b, opacity);
+                    case 5://road                                                                  
+                        material = NodeList[5][n_Id].gameObject.GetComponent<MeshRenderer>().material;
+                        NodeList[5][n_Id].gameObject.GetComponent<MeshRenderer>().material.color = new Color(material.color.r, material.color.g, material.color.b, opacity);
                         break;
-                    case 6://blockade
-                        colour = NodeList[6][n_Id].gameObject.GetComponent<Color>();
-                        NodeList[6][n_Id].gameObject.GetComponent<MeshRenderer>().material.color = new Color(colour.r, colour.g, colour.b, opacity);
+                    case 6://blockade                                                             
+                        material = NodeList[6][n_Id].gameObject.GetComponent<MeshRenderer>().material;
+                        NodeList[6][n_Id].gameObject.GetComponent<MeshRenderer>().material.color = new Color(material.color.r, material.color.g, material.color.b, opacity);
                         break;
-                    case 7://mtower
-                        colour = NodeList[7][n_Id].gameObject.GetComponent<Color>();
-                        NodeList[7][n_Id].gameObject.GetComponent<MeshRenderer>().material.color = new Color(colour.r, colour.g, colour.b, opacity);
+                    case 7://mtower                                                               
+                        material = NodeList[7][n_Id].gameObject.GetComponent<MeshRenderer>().material;
+                        NodeList[7][n_Id].gameObject.GetComponent<MeshRenderer>().material.color = new Color(material.color.r, material.color.g, material.color.b, opacity);
                         break;
-                    case 8://wonder
-                        colour = NodeList[8][n_Id].gameObject.GetComponent<Color>();
-                        NodeList[8][n_Id].gameObject.GetComponent<MeshRenderer>().material.color = new Color(colour.r, colour.g, colour.b, opacity);
+                    case 8://wonder                                                                
+                        material = NodeList[8][n_Id].gameObject.GetComponent<MeshRenderer>().material;
+                        NodeList[8][n_Id].gameObject.GetComponent<MeshRenderer>().material.color = new Color(material.color.r, material.color.g, material.color.b, opacity);
                         break;
                 }
             }
         }
-
-        public void SetZonedColourSelection(int[] nodeIdArray, int[] nodeTypeArray)
+        public void SetZonedColourSelectionOff(int[] nodeIdArray, int[] nodeTypeArray)
         {
-            Color nodeZonedColour = new Color(0f, 0f, 0f, 0f);
-            Color nodeColour = new Color(0f, 0f, 0f, 0f);
+            Material nodeZonedMaterial = null;
+            Material nodeMaterial = null;
             int count = 0;
             foreach (int n_Id in nodeIdArray)
             {
@@ -631,54 +657,105 @@ namespace Assets.Scripts.ClientManagers.Kingdom
                 switch (nodeTypeArray[count])
                 {
                     case 0://grassland
-                        nodeColour = NodeList[node.NodeType][n_Id].gameObject.GetComponent<Color>();
-                        nodeZonedColour = NodeList[nodeTypeArray[count]][n_Id].gameObject.GetComponent<Color>();
-                        NodeList[node.NodeType][n_Id].gameObject.GetComponent<MeshRenderer>().material.color = new Color(nodeZonedColour.r, nodeZonedColour.g, nodeZonedColour.b, nodeColour.a);
+                        nodeMaterial = NodeMaterials[node.NodeType];
+                        NodeList[node.NodeType][n_Id].gameObject.GetComponent<MeshRenderer>().material.color = new Color(nodeMaterial.color.r, nodeMaterial.color.g, nodeMaterial.color.b, nodeMaterial.color.a);
                         break;
                     case 1://towncentre
-                        nodeColour = NodeList[node.NodeType][n_Id].gameObject.GetComponent<Color>();
-                        nodeZonedColour = NodeList[nodeTypeArray[count]][n_Id].gameObject.GetComponent<Color>();
-                        NodeList[node.NodeType][n_Id].gameObject.GetComponent<MeshRenderer>().material.color = new Color(nodeZonedColour.r, nodeZonedColour.g, nodeZonedColour.b, nodeColour.a);
+                        nodeMaterial = NodeMaterials[node.NodeType];
+                        NodeList[node.NodeType][n_Id].gameObject.GetComponent<MeshRenderer>().material.color = new Color(nodeMaterial.color.r, nodeMaterial.color.g, nodeMaterial.color.b, nodeMaterial.color.a);
                         break;
                     case 2://house
-                        nodeColour = NodeList[node.NodeType][n_Id].gameObject.GetComponent<Color>();
-                        nodeZonedColour = NodeList[nodeTypeArray[count]][n_Id].gameObject.GetComponent<Color>();
-                        NodeList[node.NodeType][n_Id].gameObject.GetComponent<MeshRenderer>().material.color = new Color(nodeZonedColour.r, nodeZonedColour.g, nodeZonedColour.b, nodeColour.a);
+                        nodeMaterial = NodeMaterials[node.NodeType];
+                       NodeList[node.NodeType][n_Id].gameObject.GetComponent<MeshRenderer>().material.color = new Color(nodeMaterial.color.r, nodeMaterial.color.g, nodeMaterial.color.b, nodeMaterial.color.a);
                         break;
                     case 3://library
-                        nodeColour = NodeList[node.NodeType][n_Id].gameObject.GetComponent<Color>();
-                        nodeZonedColour = NodeList[nodeTypeArray[count]][n_Id].gameObject.GetComponent<Color>();
-                        NodeList[node.NodeType][n_Id].gameObject.GetComponent<MeshRenderer>().material.color = new Color(nodeZonedColour.r, nodeZonedColour.g, nodeZonedColour.b, nodeColour.a);
+                        nodeMaterial = NodeMaterials[node.NodeType];
+                      NodeList[node.NodeType][n_Id].gameObject.GetComponent<MeshRenderer>().material.color = new Color(nodeMaterial.color.r, nodeMaterial.color.g, nodeMaterial.color.b, nodeMaterial.color.a);
                         break;
                     case 4://factory
-                        nodeColour = NodeList[node.NodeType][n_Id].gameObject.GetComponent<Color>();
-                        nodeZonedColour = NodeList[nodeTypeArray[count]][n_Id].gameObject.GetComponent<Color>();
-                        NodeList[node.NodeType][n_Id].gameObject.GetComponent<MeshRenderer>().material.color = new Color(nodeZonedColour.r, nodeZonedColour.g, nodeZonedColour.b, nodeColour.a);
+                        nodeMaterial = NodeMaterials[node.NodeType];
+                       NodeList[node.NodeType][n_Id].gameObject.GetComponent<MeshRenderer>().material.color = new Color(nodeMaterial.color.r, nodeMaterial.color.g, nodeMaterial.color.b, nodeMaterial.color.a);
                         break;
                     case 5://road
-                        nodeColour = NodeList[node.NodeType][n_Id].gameObject.GetComponent<Color>();
-                        nodeZonedColour = NodeList[nodeTypeArray[count]][n_Id].gameObject.GetComponent<Color>();
-                        NodeList[node.NodeType][n_Id].gameObject.GetComponent<MeshRenderer>().material.color = new Color(nodeZonedColour.r, nodeZonedColour.g, nodeZonedColour.b, nodeColour.a);
+                        nodeMaterial = NodeMaterials[node.NodeType];
+                       NodeList[node.NodeType][n_Id].gameObject.GetComponent<MeshRenderer>().material.color = new Color(nodeMaterial.color.r, nodeMaterial.color.g, nodeMaterial.color.b, nodeMaterial.color.a);
                         break;
                     case 6://blockade
-                        nodeColour = NodeList[node.NodeType][n_Id].gameObject.GetComponent<Color>();
-                        nodeZonedColour = NodeList[nodeTypeArray[count]][n_Id].gameObject.GetComponent<Color>();
-                        NodeList[node.NodeType][n_Id].gameObject.GetComponent<MeshRenderer>().material.color = new Color(nodeZonedColour.r, nodeZonedColour.g, nodeZonedColour.b, nodeColour.a);
+                        nodeMaterial = NodeMaterials[node.NodeType];
+                       NodeList[node.NodeType][n_Id].gameObject.GetComponent<MeshRenderer>().material.color = new Color(nodeMaterial.color.r, nodeMaterial.color.g, nodeMaterial.color.b, nodeMaterial.color.a);
                         break;
                     case 7://mtower
-                        nodeColour = NodeList[node.NodeType][n_Id].gameObject.GetComponent<Color>();
-                        nodeZonedColour = NodeList[nodeTypeArray[count]][n_Id].gameObject.GetComponent<Color>();
-                        NodeList[node.NodeType][n_Id].gameObject.GetComponent<MeshRenderer>().material.color = new Color(nodeZonedColour.r, nodeZonedColour.g, nodeZonedColour.b, nodeColour.a);
+                        nodeMaterial = NodeMaterials[node.NodeType];
+                        NodeList[node.NodeType][n_Id].gameObject.GetComponent<MeshRenderer>().material.color = new Color(nodeMaterial.color.r, nodeMaterial.color.g, nodeMaterial.color.b, nodeMaterial.color.a);
                         break;
                     case 8://wonder
-                        nodeColour = NodeList[node.NodeType][n_Id].gameObject.GetComponent<Color>();
-                        nodeZonedColour = NodeList[nodeTypeArray[count]][n_Id].gameObject.GetComponent<Color>();
-                        NodeList[node.NodeType][n_Id].gameObject.GetComponent<MeshRenderer>().material.color = new Color(nodeZonedColour.r, nodeZonedColour.g, nodeZonedColour.b, nodeColour.a);
+                        nodeMaterial = NodeMaterials[node.NodeType];
+                       NodeList[node.NodeType][n_Id].gameObject.GetComponent<MeshRenderer>().material.color = new Color(nodeMaterial.color.r, nodeMaterial.color.g, nodeMaterial.color.b, nodeMaterial.color.a);
                         break;
                 }
                 count++;
             }
         }
+        public void SetZonedColourSelectionOn(int[] nodeIdArray, int[] nodeTypeArray)
+        {
+            Material nodeZonedMaterial = null;
+            Material nodeMaterial = null;
+            int count = 0;
+            foreach (int n_Id in nodeIdArray)
+            {
+                BaseNode node = Map[n_Id];
+                switch (nodeTypeArray[count])
+                {
+                    case 0://grassland
+                        nodeMaterial = NodeMaterials[node.NodeType];
+                        nodeZonedMaterial = NodeList[nodeTypeArray[count]][n_Id].gameObject.GetComponent<MeshRenderer>().material;
+                        NodeList[node.NodeType][n_Id].gameObject.GetComponent<MeshRenderer>().material.color = new Color(nodeZonedMaterial.color.r, nodeZonedMaterial.color.g, nodeZonedMaterial.color.b, nodeMaterial.color.a);
+                        break;
+                    case 1://towncentre
+                        nodeMaterial = NodeMaterials[node.NodeType];
+                        nodeZonedMaterial = NodeList[nodeTypeArray[count]][n_Id].gameObject.GetComponent<MeshRenderer>().material;
+                        NodeList[node.NodeType][n_Id].gameObject.GetComponent<MeshRenderer>().material.color = new Color(nodeZonedMaterial.color.r, nodeZonedMaterial.color.g, nodeZonedMaterial.color.b, nodeMaterial.color.a);
+                        break;
+                    case 2://house
+                        nodeMaterial = NodeMaterials[node.NodeType];
+                        nodeZonedMaterial = NodeList[nodeTypeArray[count]][n_Id].gameObject.GetComponent<MeshRenderer>().material;
+                        NodeList[node.NodeType][n_Id].gameObject.GetComponent<MeshRenderer>().material.color = new Color(nodeZonedMaterial.color.r, nodeZonedMaterial.color.g, nodeZonedMaterial.color.b, nodeMaterial.color.a);
+                        break;
+                    case 3://library
+                        nodeMaterial = NodeMaterials[node.NodeType];
+                        nodeZonedMaterial = NodeList[nodeTypeArray[count]][n_Id].gameObject.GetComponent<MeshRenderer>().material;
+                        NodeList[node.NodeType][n_Id].gameObject.GetComponent<MeshRenderer>().material.color = new Color(nodeZonedMaterial.color.r, nodeZonedMaterial.color.g, nodeZonedMaterial.color.b, nodeMaterial.color.a);
+                        break;
+                    case 4://factory
+                        nodeMaterial = NodeMaterials[node.NodeType];
+                        nodeZonedMaterial = NodeList[nodeTypeArray[count]][n_Id].gameObject.GetComponent<MeshRenderer>().material;
+                        NodeList[node.NodeType][n_Id].gameObject.GetComponent<MeshRenderer>().material.color = new Color(nodeZonedMaterial.color.r, nodeZonedMaterial.color.g, nodeZonedMaterial.color.b, nodeMaterial.color.a);
+                        break;
+                    case 5://road
+                        nodeMaterial = NodeMaterials[node.NodeType];
+                        nodeZonedMaterial = NodeList[nodeTypeArray[count]][n_Id].gameObject.GetComponent<MeshRenderer>().material;
+                        NodeList[node.NodeType][n_Id].gameObject.GetComponent<MeshRenderer>().material.color = new Color(nodeZonedMaterial.color.r, nodeZonedMaterial.color.g, nodeZonedMaterial.color.b, nodeMaterial.color.a);
+                        break;
+                    case 6://blockade
+                        nodeMaterial = NodeMaterials[node.NodeType];
+                        nodeZonedMaterial = NodeList[nodeTypeArray[count]][n_Id].gameObject.GetComponent<MeshRenderer>().material;
+                        NodeList[node.NodeType][n_Id].gameObject.GetComponent<MeshRenderer>().material.color = new Color(nodeZonedMaterial.color.r, nodeZonedMaterial.color.g, nodeZonedMaterial.color.b, nodeMaterial.color.a);
+                        break;
+                    case 7://mtower
+                        nodeMaterial = NodeMaterials[node.NodeType]; 
+                        nodeZonedMaterial = NodeList[nodeTypeArray[count]][n_Id].gameObject.GetComponent<MeshRenderer>().material;
+                        NodeList[node.NodeType][n_Id].gameObject.GetComponent<MeshRenderer>().material.color = new Color(nodeZonedMaterial.color.r, nodeZonedMaterial.color.g, nodeZonedMaterial.color.b, nodeMaterial.color.a);
+                        break;
+                    case 8://wonder
+                        nodeMaterial = NodeMaterials[node.NodeType];
+                        nodeZonedMaterial = NodeList[nodeTypeArray[count]][n_Id].gameObject.GetComponent<MeshRenderer>().material;
+                        NodeList[node.NodeType][n_Id].gameObject.GetComponent<MeshRenderer>().material.color = new Color(nodeZonedMaterial.color.r, nodeZonedMaterial.color.g, nodeZonedMaterial.color.b, nodeMaterial.color.a);
+                        break;
+                }
+                count++;
+            }
+        }
+
 
         public void DeActivate(int n_Id, int n_Type)
         {
@@ -703,7 +780,7 @@ namespace Assets.Scripts.ClientManagers.Kingdom
                     WonderDict[n_Id].SetActive(false);
                     break;
                 case 6:
-                    MTowerDict[n_Id].SetActive(false);
+                    TowerDict[n_Id].SetActive(false);
                     break;
                 case 7:
                     RoadDict[n_Id].SetActive(false);
@@ -734,7 +811,7 @@ namespace Assets.Scripts.ClientManagers.Kingdom
                     FactoryDict[n_Id].SetActive(true);
                     break;
                 case 5:
-                    MTowerDict[n_Id].SetActive(true);
+                    TowerDict[n_Id].SetActive(true);
                     break;
                 case 6:
                     RoadDict[n_Id].SetActive(true);
@@ -747,7 +824,6 @@ namespace Assets.Scripts.ClientManagers.Kingdom
                     break;
             }
         }
-
 
         public void Action()
         {
@@ -786,6 +862,219 @@ namespace Assets.Scripts.ClientManagers.Kingdom
         }
         #endregion
 
+        #region UI Management
+        #region Initialise Building Selector Buttons
+        private GameObject btn_Grassland, btn_TownCentre, btn_House, btn_Library, btn_Factory, btn_Road, btn_Blockade, btn_Tower, btn_Wonder;
+        public GameObject Btn_Grassland { get => btn_Grassland; set => btn_Grassland = value; }
+        public GameObject Btn_TownCentre { get => btn_TownCentre; set => btn_TownCentre = value; }
+        public GameObject Btn_House { get => btn_House; set => btn_House = value; }
+        public GameObject Btn_Library { get => btn_Library; set => btn_Library = value; }
+        public GameObject Btn_Factory { get => btn_Factory; set => btn_Factory = value; }
+        public GameObject Btn_Road { get => btn_Road; set => btn_Road = value; }
+        public GameObject Btn_Blockade { get => btn_Blockade; set => btn_Blockade = value; }
+        public GameObject Btn_Tower { get => btn_Tower; set => btn_Tower = value; }
+        public GameObject Btn_Wonder { get => btn_Wonder; set => btn_Wonder = value; }
+        public void SetRightPanelUI()
+        {
+            GameManager.Instance.InitialiseUnityEvents();
+            NavigateSelectedBuildingState(0); //initialise to grassland
+
+            Btn_Grassland = GameObject.Find("btn_Grassland");
+            Btn_Grassland.GetComponent<Button>().onClick.AddListener(() => NavigateSelectedBuildingState(0));
+            Btn_TownCentre = GameObject.Find("btn_TownCentre");
+            Btn_TownCentre.GetComponent<Button>().onClick.AddListener(() => NavigateSelectedBuildingState(1));
+            Btn_House = GameObject.Find("btn_House");
+            Btn_House.GetComponent<Button>().onClick.AddListener(() => NavigateSelectedBuildingState(2));
+            Btn_Library = GameObject.Find("btn_Library");
+            Btn_Library.GetComponent<Button>().onClick.AddListener(() => NavigateSelectedBuildingState(3));
+            Btn_Factory = GameObject.Find("btn_Factory");
+            Btn_Factory.GetComponent<Button>().onClick.AddListener(() => NavigateSelectedBuildingState(4));
+            Btn_Road = GameObject.Find("btn_Road");
+            Btn_Road.GetComponent<Button>().onClick.AddListener(() => NavigateSelectedBuildingState(5));
+            Btn_Blockade = GameObject.Find("btn_Blockade");
+            Btn_Blockade.GetComponent<Button>().onClick.AddListener(() => NavigateSelectedBuildingState(6));
+            Btn_Tower = GameObject.Find("btn_Tower");
+            Btn_Tower.GetComponent<Button>().onClick.AddListener(() => NavigateSelectedBuildingState(7));
+            Btn_Wonder = GameObject.Find("btn_Wonder");
+            Btn_Wonder.GetComponent<Button>().onClick.AddListener(() => NavigateSelectedBuildingState(8));
+        }
+
+        #endregion
+
+
+        public GameObject ExpandNodePanelUI { get => expandNodePanelUI; set => expandNodePanelUI = value; }
+        public GameObject NodePanel { get => nodeStatisticsUI; set => nodeStatisticsUI = value; }
+
+        private GameObject nodeStatisticsUI, expandNodePanelUI;
+        public GameObject tmp_MapName { get => mapName; set => mapName = value; }
+        public GameObject btn_ZonedMode { get => zoned; set => zoned = value; }
+        public GameObject btn_ConfirmMap { get => publish; set => publish = value; }
+        public GameObject tmp_Node { get => node; set => node = value; }
+        public GameObject tmp_NodeZoned { get => nodeZoned; set => nodeZoned = value; }
+
+        private GameObject publish, zoned, mapName, nodeZoned, node;
+
+        public void ToggleNodeStatisticsUI()
+        {
+            if (NodePanel.activeSelf)
+                NodePanel.SetActive(false);
+            else
+                NodePanel.SetActive(true);
+        }
+        public void SetNodeStatistics()
+        {
+            ExpandNodePanelUI = GameObject.Find("btn_ExpandNodeStatistics");//btn_ExpandNodeStatistics
+            NodePanel = GameObject.Find("NodePanel");
+
+            ExpandNodePanelUI.GetComponent<Button>().onClick.AddListener(() => ToggleNodeStatisticsUI());
+
+            tmp_NodeZoned = GameObject.Find("nodeZonedIcon");
+            tmp_Node = GameObject.Find("nodeIcon");
+
+            Debug.Log("NodeStatsUI enabled");
+
+        }
+        public void UpdateNodeStatistics(int nodeId)
+        {
+            Material mat1 = NodeMaterials[0];
+            Material mat2 = NodeMaterials[0];
+            switch (Map[nodeId].NodeType)
+            {
+                case 1:
+                    mat1 = NodeMaterials[1];
+                    break;
+                case 2:
+                    mat1 = NodeMaterials[2];
+                    break;
+                case 3:
+                    mat1 = NodeMaterials[3];
+                    break;
+                case 4:
+                    mat1 = NodeMaterials[4];
+                    break; 
+                case 5:    
+                    mat1 = NodeMaterials[5];
+                    break; 
+                case 6:    
+                    mat1 = NodeMaterials[6];
+                    break; 
+                case 7:    
+                    mat1 = NodeMaterials[7];
+                    break;
+                case 8:   
+                    mat1 = NodeMaterials[8];
+                    break;
+                default:
+                    break;
+            }
+            if (ZonedMapDict.ContainsKey(nodeId))
+            {
+                switch (ZonedMapDict[nodeId].NodeType)
+                {
+                    case 1:
+                        mat2 = NodeMaterials[1];
+                        break;
+                    case 2:
+                        mat2 = NodeMaterials[2];
+                        break;
+                    case 3:
+                        mat2 = NodeMaterials[3];
+                        break;
+                    case 4:
+                        mat2 = NodeMaterials[4]; 
+                        break;
+                    case 5:
+                        mat2 = NodeMaterials[5];
+                        break;
+                    case 6:
+                        mat2 = NodeMaterials[6];
+                        break;
+                    case 7:
+                        mat2 = NodeMaterials[7];
+                        break;
+                    case 8:
+                        mat2 = NodeMaterials[8];
+                        break;
+                    default:
+                        break;
+                }
+                tmp_NodeZoned.GetComponent<RawImage>().color = new Color(mat2.color.r, mat2.color.g, mat2.color.b, mat2.color.a);
+            }
+            tmp_Node.GetComponent<RawImage>().color = new Color(mat1.color.r, mat1.color.g, mat1.color.b, mat1.color.a);
+        }
+        public void SetTopPanelUI()
+        {
+            SetNodeStatistics();
+            btn_ZonedMode = GameObject.Find("btn_ZonedMode");//tmp_MapName
+            btn_ConfirmMap = GameObject.Find("btn_ConfirmMap");
+            tmp_MapName = GameObject.Find("tmp_MapName");
+            btn_ZonedMode.GetComponent<Button>().onClick.AddListener(() => ToggleZoning()); //?
+            btn_ConfirmMap.GetComponent<Button>().onClick.AddListener(() => ConfirmMapChanges());
+            Debug.Log(tmp_MapName.name);
+            Debug.Log(kingdomState.KingdomName);
+            tmp_MapName.GetComponent<TMP_Text>().text = KingdomState.KingdomName;
+        }
+        //public IEnumerator<int> UpdateMap()
+        //{
+        //    int[] nodeTypes = new int[ZonedMapDict.Count];
+        //    int i = 0;
+        //    foreach (BaseNode node in ZonedMapDict.Values)
+        //    {
+        //        nodeTypes[i] = node.NodeType;
+        //    }
+        //    var payload = new KingdomMapUpdatePayload
+        //    {
+        //        NodeIndexes = ZonedMapDict.Keys.ToArray<int>(),
+        //        NodeTypes = nodeTypes
+        //    };
+        //    Task.
+        //    await KingdomMapUpdateAsync(payload);
+        //}
+        public void ConfirmMapChanges()
+        {
+            if (TreasuryManager.Instance.TreasuryState.GetTotalCoin() < TreasuryManager.Instance.ZoningCost)
+            {
+                if (!IsZoningMode)
+                    ToggleZoning();
+            }
+            else
+                UpdateMap();
+
+
+        }
+        IEnumerator UpdateMap()
+        {
+            int[] nodeTypes = new int[ZonedMapDict.Count];
+            int i = 0;
+            foreach (BaseNode node in ZonedMapDict.Values)
+            {
+                nodeTypes[i] = node.NodeType;
+            }
+            var payload = new KingdomMapUpdatePayload
+            {
+                NodeIndexes = ZonedMapDict.Keys.ToArray<int>(),
+                NodeTypes = nodeTypes
+            };
+            Task task = KingdomMapUpdateAsync(payload);
+            yield return new WaitUntil(() => task.IsCompleted);
+            if (task.IsCompletedSuccessfully)
+            {
+                DiscardZonedMap();
+                ResetNodeStatisticsUI();
+            }
+        }
+
+        public void ResetNodeStatisticsUI()
+        {
+            tmp_NodeZoned.GetComponentInChildren<TextMeshPro>().text = "zonedNode";
+            tmp_NodeZoned.GetComponentInChildren<Image>().color = new Color(0, 0, 0);
+            tmp_Node.GetComponentInChildren<TextMeshPro>().text = "mapNode";
+            tmp_Node.GetComponentInChildren<Image>().color = new Color(0, 0, 0);
+            //NodeStatisticsPanel
+            //all NSCells NSCell0 -> NSCell 7
+        }
+
+        #endregion
 
         #region Build Options
         [SerializeField] private int nodeIdAlt1;
@@ -811,6 +1100,10 @@ namespace Assets.Scripts.ClientManagers.Kingdom
         public SelectedBuilding SelectedBuildingState { get { return selectedBuildingState; } set { selectedBuildingState = value; } }
         //public BuildState BuildState { get { return buildState; } set { buildState = value; } }
         public AltState AltState { get { return altState; } set { altState = value; } }
+
+
+
+
 
         //public void NavigateBuildState(string UI_ObjName) //not required?
         //{
@@ -838,7 +1131,7 @@ namespace Assets.Scripts.ClientManagers.Kingdom
                 case 1: // recording first node
                     AltState = AltState.FirstSelected;
                     break;
-                case 2: // recorded both nodes, set to false on confirmation
+                case 2: // recorded both nodeArray, set to false on confirmation
                     AltState = AltState.SecondSelected;
                     break;
                 case 3: //after confirmation of second node, set to false
@@ -872,7 +1165,7 @@ namespace Assets.Scripts.ClientManagers.Kingdom
                     SelectedBuildingState = SelectedBuilding.Blockade;
                     break;
                 case 7:
-                    SelectedBuildingState = SelectedBuilding.MTower;
+                    SelectedBuildingState = SelectedBuilding.Tower;
                     break;
                 case 8:
                     SelectedBuildingState = SelectedBuilding.Wonder;
@@ -924,7 +1217,7 @@ namespace Assets.Scripts.ClientManagers.Kingdom
             Factory = 4,          //4
             Road = 5,             //5
             Blockade = 6,         //6
-            MTower = 7,           //7
+            Tower = 7,            //7
             Wonder = 8,           //8
         }
         #endregion

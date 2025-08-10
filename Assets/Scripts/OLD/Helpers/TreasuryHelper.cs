@@ -131,7 +131,7 @@ namespace Helpers
         else if (building.Contains("House"))      { building_Id = 1; P_GainRate_Coin -= GainRate_House; P_Multiplier_Coin -= Multiplier_House; }
         else if (building.Contains("Library"))    { building_Id = 2; P_GainRate_Coin -= GainRate_Library; P_Multiplier_Coin -= Multiplier_Library; }
         else if (building.Contains("Factory"))    { building_Id = 3; P_GainRate_Coin -= GainRate_Factory; P_Multiplier_Coin -= Multiplier_Factory; }
-        else if (building.Contains("MTower"))     { building_Id = 4; P_GainRate_Coin -= GainRate_MTower; P_Multiplier_Coin -= Multiplier_MTower; }
+        else if (building.Contains("Tower"))     { building_Id = 4; P_GainRate_Coin -= GainRate_MTower; P_Multiplier_Coin -= Multiplier_MTower; }
         else if (building.Contains("Road"))       { building_Id = 5; P_GainRate_Coin -= GainRate_Road; P_Multiplier_Coin -= Multiplier_Road; }
         else if (building.Contains("Blockade"))   { building_Id = 6; P_GainRate_Coin -= GainRate_Blockade; P_Multiplier_Coin -= Multiplier_Blockade; }
         else if (building.Contains("Wonder"))     { building_Id = 7; P_GainRate_Coin -= GainRate_Wonder; P_Multiplier_Coin -= Multiplier_Wonder; }
@@ -158,7 +158,7 @@ namespace Helpers
                 else if (building.Contains("House"))       { building_Id = 1;  P_GainRate_Coin += GainRate_House; P_Multiplier_Coin += Multiplier_House; }
                 else if (building.Contains("Library"))     { building_Id = 2;  P_GainRate_Coin += GainRate_Library; P_Multiplier_Coin += Multiplier_Library; }
                 else if (building.Contains("Factory"))     { building_Id = 3;  P_GainRate_Coin += GainRate_Factory; P_Multiplier_Coin += Multiplier_Factory; }
-                else if (building.Contains("MTower"))      { building_Id = 4;  P_GainRate_Coin += GainRate_MTower; P_Multiplier_Coin += Multiplier_MTower; }
+                else if (building.Contains("Tower"))      { building_Id = 4;  P_GainRate_Coin += GainRate_MTower; P_Multiplier_Coin += Multiplier_MTower; }
                 else if (building.Contains("Road"))        { building_Id = 5;  P_GainRate_Coin += GainRate_Road; P_Multiplier_Coin += Multiplier_Road; }
                 else if (building.Contains("Blockade"))    { building_Id = 6;  P_GainRate_Coin += GainRate_Blockade; P_Multiplier_Coin += Multiplier_Blockade; }
                 else if (building.Contains("Wonder"))      { building_Id = 7;  P_GainRate_Coin += GainRate_Wonder; P_Multiplier_Coin += Multiplier_Wonder; }
@@ -196,7 +196,7 @@ namespace Helpers
             case "Wonder":
                 if (VALUE_WONDER >= P_Coin) return true;
                 return false;
-            case "MTower":
+            case "Tower":
                 if (VALUE_MTOWER >= P_Coin) return true;
                 return false;
             case "Road":

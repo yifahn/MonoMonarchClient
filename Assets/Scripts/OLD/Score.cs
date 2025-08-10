@@ -343,7 +343,7 @@ public class Score : MonoBehaviour
             case "Blockade(Clone)":
                 numBlockades -= 1;
                 break;
-            case "TowerM(Clone)":
+            case "Tower(Clone)":
                 numMTowers -= 1;
                 break;
             case "TowerAA(Clone)":
@@ -428,7 +428,7 @@ public class Score : MonoBehaviour
                     UpdateScore(score);
                 }
                 break;
-            case "TowerM":
+            case "Tower":
                 if (SaveAndLoad.isReadyPlay)
                 {
                     numMTowers += 1;

@@ -1,15 +1,15 @@
-using System.Collections;
-using System.Collections.Generic;
-using TMPro;
-using UnityEngine;
-using UnityEngine.SceneManagement;
-
-using Assets.Scripts.ClientManagers.Character;
 using Assets.Scripts.ClientManagers.Armoury;
+using Assets.Scripts.ClientManagers.Character;
+using Assets.Scripts.ClientManagers.Game.Loading;
 using Assets.Scripts.ClientManagers.Kingdom;
 using Assets.Scripts.ClientManagers.Soupkitchen;
 using Assets.Scripts.ClientManagers.Treasury;
+using System.Collections;
+using System.Collections.Generic;
 using System.Threading.Tasks;
+using TMPro;
+using UnityEngine;
+using UnityEngine.SceneManagement;
 
 
 public class LoadingScreen : MonoBehaviour

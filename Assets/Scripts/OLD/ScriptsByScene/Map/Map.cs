@@ -73,7 +73,7 @@ namespace Managers//required due to other script called Map, remove this once al
             Wonder = (GameObject)Resources.Load(@"Node/Buildings/Wonder", typeof(GameObject));
             TownCentre = (GameObject)Resources.Load(@"Node/Buildings/TownCentre", typeof(GameObject));
             Grassland = (GameObject)Resources.Load(@"Node/Buildings/Grassland", typeof(GameObject));
-            MTower = (GameObject)Resources.Load(@"Node/Buildings/MTower", typeof(GameObject));
+            MTower = (GameObject)Resources.Load(@"Node/Buildings/Tower", typeof(GameObject));
             Road = (GameObject)Resources.Load(@"Node/Buildings/Road", typeof(GameObject));
             Blockade = (GameObject)Resources.Load(@"Node/Buildings/Blockade", typeof(GameObject));
         }
@@ -133,7 +133,7 @@ namespace Managers//required due to other script called Map, remove this once al
             }
         }
         /// <summary>
-        /// Alters material properties of input nodes to enable a degree of visual transparency
+        /// Alters material properties of input nodeArray to enable a degree of visual transparency
         /// </summary>
         /// <param name="opacity"></param>
         public void SetOpacitySelection(int[] nodeArray, float opacity)
@@ -182,7 +182,7 @@ namespace Managers//required due to other script called Map, remove this once al
                 case "Wonder":
                     WonderDict[n_Id].SetActive(false);
                     break;
-                case "MTower":
+                case "Tower":
                     MTowerDict[n_Id].SetActive(false);
                     break;
                 case "Road":
@@ -217,7 +217,7 @@ namespace Managers//required due to other script called Map, remove this once al
                     FactoryDict[n_Id].SetActive(true);
                     MapHelper.UpdateNodeDict(n_Id, 3);
                     break;
-                case "MTower":
+                case "Tower":
                     MTowerDict[n_Id].SetActive(true);
                     MapHelper.UpdateNodeDict(n_Id, 7);
                     break;

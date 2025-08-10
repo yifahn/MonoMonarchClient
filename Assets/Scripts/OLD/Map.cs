@@ -75,7 +75,7 @@ public class Map : MonoBehaviour
         farm = (GameObject)Resources.Load(@"Buildings/Farm", typeof(GameObject));
         grassland = (GameObject)Resources.Load(@"Buildings/Grassland", typeof(GameObject));
         towerAA = (GameObject)Resources.Load(@"Buildings/TowerAA", typeof(GameObject));
-        towerM = (GameObject)Resources.Load(@"Buildings/TowerM", typeof(GameObject));
+        towerM = (GameObject)Resources.Load(@"Buildings/Tower", typeof(GameObject));
         road = (GameObject)Resources.Load(@"Buildings/Road", typeof(GameObject));
         blockade = (GameObject)Resources.Load(@"Buildings/Blockade", typeof(GameObject));
         forest = (GameObject)Resources.Load(@"Buildings/Forest", typeof(GameObject));
@@ -252,7 +252,7 @@ public class Map : MonoBehaviour
             {
                 scoreObj.GetComponent<Score>().RemoveUpdate(selectedBuildingRemove);
                 EditMap(NodeSelector(), selectedNode.transform.position.x, selectedNode.transform.position.z);
-                //NOTE to self for later if implementing UNDO - build a list which contains previously altered nodes, which type it is and their positions, limit list to ~50~ entrys??? - first in last out
+                //NOTE to self for later if implementing UNDO - build a list which contains previously altered nodeArray, which type it is and their positions, limit list to ~50~ entrys??? - first in last out
             }
             else if (!grasslandSelected) //IF build
             {
@@ -314,7 +314,7 @@ public class Map : MonoBehaviour
             {
                 scoreObj.GetComponent<Score>().RemoveUpdate(selectedBuildingRemove);
                 EditMap(NodeSelector(), selectedNode.transform.position.x, selectedNode.transform.position.z);
-                //NOTE to self for later if implementing UNDO - build a list which contains previously altered nodes, which type it is and their positions, limit list to ~50~ entrys??? - first in last out
+                //NOTE to self for later if implementing UNDO - build a list which contains previously altered nodeArray, which type it is and their positions, limit list to ~50~ entrys??? - first in last out
             }
             else if (!grasslandSelected) //IF build
             {
@@ -1019,7 +1019,7 @@ public class Map : MonoBehaviour
                 case "TowerAA":
                     if (scoreObj.GetComponent<Score>().score > scoreObj.GetComponent<Score>().towerAAPrice) { returnBool = true; }
                     break;
-                case "TowerM":
+                case "Tower":
                     if (scoreObj.GetComponent<Score>().score > scoreObj.GetComponent<Score>().towerMPrice) { returnBool = true; }
                     break;
                 case "Forest":
@@ -1143,7 +1143,7 @@ public class Map : MonoBehaviour
                 if (SaveAndLoad.IsReadyPlay == false) { mapListL2.RemoveAt(index); mapListL2.Insert(index, CellState.MapListL2[index]); }
                 else { mapListL2.RemoveAt(index); mapListL2.Insert(index, string.Format("{0},1-0,2-0,3-0,4-0,5-0", weight)); }
                 break;
-            case "TowerM":
+            case "Tower":
                 Destroy(mapListL1[index]); //destroy gameobject at index of mapListL1
                 mapListL1.RemoveAt(index); //remove gameobject from list
                 mapListL1.Insert(index, Instantiate(replacement, position = new Vector3(x, buildingHeight, y), Quaternion.identity)); //instantiate obj and insert instantiated obj into list                                                                                                    //edit L2 list
@@ -1235,7 +1235,7 @@ public class Map : MonoBehaviour
                     case "TowerAA(Clone)":
                         EditMap(towerAA, j * offSet, -ii * offSet);
                         break;
-                    case "TowerM(Clone)":
+                    case "Tower(Clone)":
                         EditMap(towerM, j * offSet, -ii * offSet);
                         break;
                     case "Forest(Clone)":
@@ -1289,7 +1289,7 @@ public class Map : MonoBehaviour
                     case "TowerAA(Clone)":
                         EditMap(towerAA, j * offSet, -ii * offSet);
                         break;
-                    case "TowerM(Clone)":
+                    case "Tower(Clone)":
                         EditMap(towerM, j * offSet, -ii * offSet);
                         break;
                     case "Forest(Clone)":

@@ -233,7 +233,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 609046538}
-  - component: {fileID: 609046537}
+  - component: {fileID: 609046539}
   m_Layer: 0
   m_Name: LoadingScreenHandler
   m_TagString: Untagged
@@ -241,21 +241,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &609046537
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 609046536}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 122b6946575ede1438758e45188c4d4b, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  canvasGroup: {fileID: 1267739625}
-  textProgress: {fileID: 1481493919}
-  textInfo: {fileID: 1807008159}
 --- !u!4 &609046538
 Transform:
   m_ObjectHideFlags: 0
@@ -271,6 +256,22 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &609046539
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 609046536}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8214228c373caa0469e77111fd6727f5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  canvasGroup: {fileID: 1267739625}
+  textProgress: {fileID: 1481493919}
+  textInfo: {fileID: 1807008159}
+  stagesCompleted: 
 --- !u!1 &1267739621
 GameObject:
   m_ObjectHideFlags: 0
